@@ -1,3 +1,5 @@
+#include <math.h>
+
 Adafruit_MPU6050 mpu;
 float startingAngle;
 

@@ -1,7 +1,6 @@
 #include <Wire.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
-#include <math.h>
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncWebSrv.h>
