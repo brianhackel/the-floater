@@ -3,6 +3,12 @@
 Adafruit_MPU6050 mpu;
 float startingAngle;
 
+// Set LED GPIO
+const int ledPin = 2;
+// Stores LED state
+
+String ledState;
+
 // TODO: consider having this return a bool for success/failure
 void initMpu6050() {
   if (!mpu.begin()) {
@@ -20,6 +26,46 @@ void initMpu6050() {
   Serial.print("starting Angle: ");
   Serial.print(startingAngle);
   Serial.println(" degrees");
+}
+
+// Replaces placeholder with LED state value
+String processor(const String& var) {
+  if(var == "STATE") {
+    if(!digitalRead(ledPin)) {
+      ledState = "ON";
+    }
+    else {
+      ledState = "OFF";
+    }
+    return ledState;
+  }
+  return String();
+}
+
+void setupLedServer() {
+  // Set GPIO 2 as an OUTPUT
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+  
+  // Route for root / web page
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/index.html", "text/html", false, processor);
+  });
+  
+  server.serveStatic("/", LittleFS, "/");
+  
+  // Route to set GPIO state to HIGH
+  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request) {
+    digitalWrite(ledPin, LOW);
+    request->send(LittleFS, "/index.html", "text/html", false, processor);
+  });
+
+  // Route to set GPIO state to LOW
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request) {
+    digitalWrite(ledPin, HIGH);
+    request->send(LittleFS, "/index.html", "text/html", false, processor);
+  });
+  server.begin();
 }
 
 float getDisplacementAngle() {
