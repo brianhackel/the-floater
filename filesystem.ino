@@ -1,6 +1,3 @@
-#include "LittleFS.h"
-
-
 // Initialize LittleFS
 void initFS() {
   if (!LittleFS.begin()) {

@@ -9,10 +9,6 @@
 #include <ESP8266mDNS.h>
 #include <LittleFS.h>
 
-Adafruit_MPU6050 mpu;
-
-float startingAngle;
-
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
@@ -45,35 +41,6 @@ String ledState;
 
 boolean restart = false;
 
-// Initialize WiFi
-bool initWiFi() {
-  if(ssid==""){
-    Serial.println("Undefined SSID.");
-    return false;
-  }
-
-  WiFi.mode(WIFI_STA);
-
-  WiFi.hostname(hostname);
-
-  WiFi.begin(ssid.c_str(), pass.c_str());
-
-  Serial.println("Connecting to WiFi...");
-  delay(20000);
-  if(WiFi.status() != WL_CONNECTED) {
-    Serial.println("Failed to connect.");
-    return false;
-  }
-
-  Serial.println(WiFi.localIP());
-
-  if (!MDNS.begin(hostname)) {
-    Serial.println("Error setting up MDNS responder!");
-  }
-  Serial.println("mDNS responder started");
-  return true;
-}
-
 // Replaces placeholder with LED state value
 String processor(const String& var) {
   if(var == "STATE") {
@@ -97,36 +64,9 @@ void setup() {
   // Set GPIO 2 as an OUTPUT
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
-  
-  // Load values saved in LittleFS
-  ssid = readFile(LittleFS, ssidPath);
-  pass = readFile(LittleFS, passPath);
-  Serial.println(ssid);
-  Serial.println(pass);
 
   if(initWiFi()) {
-
-    if (!mpu.begin()) {
-      Serial.println("Failed to find MPU6050 chip");
-      while (1) {
-        delay(10);
-      }
-    }
-
-    mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
-    mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-    mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
-
-    sensors_event_t startingOrientation, startG, startTemp;
-    mpu.getEvent(&startingOrientation, &startG, &startTemp);  // Store the starting orientation
-
-    // TODO: need a function for getting the readings through averaging
-
-    startingAngle = getDisplacementAngle(startingOrientation.acceleration.x, startingOrientation.acceleration.y, startingOrientation.acceleration.z);
-    Serial.print("starting Angle: ");
-    Serial.print(startingAngle);
-    Serial.println(" degrees");
-
+    initMpu6050();
 
     // Route for root / web page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -206,17 +146,8 @@ void loop() {
     ESP.restart();
   } else {
     MDNS.update();
-    /*sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
-
-    Serial.print("Acceleration X: ");
-    Serial.print(a.acceleration.x);
-    Serial.print(", Y: ");
-    Serial.print(a.acceleration.y);
-    Serial.print(", Z: ");
-    Serial.println(a.acceleration.z);
-
-    float angle = startingAngle - getDisplacementAngle(a.acceleration.x, a.acceleration.y, a.acceleration.z);
+    /*
+    float angle = startingAngle - getDisplacementAngle();
     Serial.print("Displacement Angle: ");
     Serial.print(angle);
     Serial.println(" degrees");
@@ -225,6 +156,3 @@ void loop() {
   }
 }
 
-float getDisplacementAngle(float accelX, float accelY, float accelZ) {
-  return acos(abs(accelY) / (sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ))) * 180.0 / M_PI;
-}
