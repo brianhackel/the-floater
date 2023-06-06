@@ -33,11 +33,15 @@ bool initWiFi() {
   WiFi.begin(ssid.c_str(), pass.c_str());
 
   Serial.println("Connecting to WiFi...");
-  delay(20000);
-  if(WiFi.status() != WL_CONNECTED) {
-    Serial.println("Failed to connect.");
-    return false;
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    // TODO: maybe a timeout?
+    digitalWrite(ledPin, LOW);
+    delay(250);
+    digitalWrite(ledPin, HIGH);
+    delay(250);
   }
+  digitalWrite(ledPin, LOW);
 
   Serial.println(WiFi.localIP());
 
@@ -52,7 +56,7 @@ void setupAccessPoint() {
   // Connect to Wi-Fi network with SSID and password
   Serial.println("Setting AP (Access Point)");
   // NULL sets an open Access Point
-  WiFi.softAP("ESP-WIFI-MANAGER", NULL);
+  WiFi.softAP("HYDROMETER", NULL);
 
   Serial.print("Setting soft-AP configuration ... ");
   Serial.println(WiFi.softAPConfig(local_ip, gateway, subnet) ? "Ready" : "Failed!");
