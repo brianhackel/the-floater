@@ -1,7 +1,11 @@
 #include <math.h>
+#include <RunningMedian.h>
 
 Adafruit_MPU6050 mpu;
 float startingAngle;
+#define N_SAMPLES 49
+#define N_SAMPLES_TO_AVG 29
+RunningMedian samples = RunningMedian(N_SAMPLES);
 
 // TODO: consider having this return a bool for success/failure
 void initMpu6050() {
@@ -22,7 +26,7 @@ void initMpu6050() {
   Serial.println(" degrees");
 }
 
-// Replaces placeholder with LED state value
+// Replaces placeholder with current displacement from starting
 String processor(const String& var) {
   if(var == "STATE") {
     float angle = startingAngle - getDisplacementAngle();
@@ -53,10 +57,16 @@ void setupLedServer() {
 
 float getDisplacementAngle() {
   sensors_event_t a, g, temp;
-  // TODO: need a function for getting the readings through averaging
-  mpu.getEvent(&a, &g, &temp);
-  float accelX = a.acceleration.x;
-  float accelY = a.acceleration.y;
-  float accelZ = a.acceleration.z;
-  return acos(abs(accelY) / (sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ))) * 180.0 / M_PI;
+  float accelX, accelY, accelZ;
+  int i;
+  samples.clear();
+  for (i = 0; i < N_SAMPLES; i++) {
+    mpu.getEvent(&a, &g, &temp);
+    accelX = a.acceleration.x;
+    accelY = a.acceleration.y;
+    accelZ = a.acceleration.z;
+    samples.add(acos(abs(accelY) / (sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ))) * 180.0 / M_PI);
+  }
+  return samples.getAverage(N_SAMPLES_TO_AVG);
+  
 }
