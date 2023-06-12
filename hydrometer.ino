@@ -57,7 +57,7 @@ void setup() {
 
   if(initWiFi()) {
     initMpu6050();
-    setupLedServer();
+    setupStateServer();
   } else {
     setupAccessPoint();
   }
