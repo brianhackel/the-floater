@@ -3,9 +3,12 @@
 
 Adafruit_MPU6050 mpu;
 float startingAngle;
+// TODO: this should be moved to a calibration field
+#define TEMPERATURE_CALIBRATION_OFFSET_DEGREES_F 10
 #define N_SAMPLES 49
 #define N_SAMPLES_TO_AVG 29
-RunningMedian samples = RunningMedian(N_SAMPLES);
+RunningMedian angleSamples = RunningMedian(N_SAMPLES);
+RunningMedian tempSamples = RunningMedian(N_SAMPLES);
 
 // TODO: consider having this return a bool for success/failure
 void initMpu6050() {
@@ -20,53 +23,45 @@ void initMpu6050() {
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
   
-  startingAngle = getDisplacementAngle();
+  float temperature;
+  measure(&startingAngle, &temperature);
   Serial.print("starting Angle: ");
   Serial.print(startingAngle);
   Serial.println(" degrees");
 }
 
-// Replaces placeholder with current displacement from starting
-String processor(const String& var) {
-  if(var == "STATE") {
-    float angle = startingAngle - getDisplacementAngle();
-    return String(angle);
-  }
-  return String();
-}
-
-void setupLedServer() {  
+void setupStateServer() {  
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", "text/html", false, processor);
+    request->send(LittleFS, "/index.html", "text/html", false);
   });
   
   server.serveStatic("/", LittleFS, "/");
-  
-  // Route to set GPIO state to HIGH
-  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", "text/html", false, processor);
-  });
 
-  // Route to set GPIO state to LOW
-  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", "text/html", false, processor);
+  server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
+    float angle, temperature;
+    measure(&angle, &temperature);
+    request->send(200, "application/json", "{\"angle\":\"" + String(startingAngle - angle) + "\", \"temperature\":\"" + String(temperature) + "\"}");
   });
+  
   server.begin();
 }
 
-float getDisplacementAngle() {
+void measure(float *angle, float *temperature) {
   sensors_event_t a, g, temp;
   float accelX, accelY, accelZ;
   int i;
-  samples.clear();
+  angleSamples.clear();
+  tempSamples.clear();
   for (i = 0; i < N_SAMPLES; i++) {
     mpu.getEvent(&a, &g, &temp);
     accelX = a.acceleration.x;
     accelY = a.acceleration.y;
     accelZ = a.acceleration.z;
-    samples.add(acos(abs(accelY) / (sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ))) * 180.0 / M_PI);
+    angleSamples.add(acos(abs(accelY) / (sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ))) * 180.0 / M_PI);
+    tempSamples.add(temp.temperature);
   }
-  return samples.getAverage(N_SAMPLES_TO_AVG);
-  
+  *angle = angleSamples.getAverage(N_SAMPLES_TO_AVG);
+  *temperature = (tempSamples.getAverage(N_SAMPLES_TO_AVG) * (9.0/5.0)) + 32.0;
+  *temperature = *temperature - TEMPERATURE_CALIBRATION_OFFSET_DEGREES_F;
 }
