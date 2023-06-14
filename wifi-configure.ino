@@ -2,31 +2,15 @@
 const char* PARAM_INPUT_1 = "ssid";
 const char* PARAM_INPUT_2 = "pass";
 
-//Variables to save values from HTML form
-String ssid;
-String pass;
-
 IPAddress local_ip(192,168,1,1);
 IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
 String hostname = "hydrometer";
 
-// File paths to save input values permanently
-const char* ssidPath = "/ssid.txt";
-const char* passPath = "/pass.txt";
-
 // Initialize WiFi
-bool initWiFi() {
-  // Load values saved in LittleFS
-  String ssid = readFile(LittleFS, ssidPath);
-  String pass = readFile(LittleFS, passPath);
+void initWiFi(String ssid, String pass) {
   Serial.println(ssid);
   Serial.println(pass);
-
-  if(ssid==""){
-    Serial.println("Undefined SSID.");
-    return false;
-  }
 
   WiFi.mode(WIFI_STA);
   WiFi.hostname(hostname);
@@ -36,6 +20,8 @@ bool initWiFi() {
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     // TODO: maybe a timeout?
+    // TODO: we can also use Pin #0 (red LED) for general purpose blinking
+    // TODO: use the TickTwo library to do it (probably in other files)
     digitalWrite(ledPin, LOW);
     delay(250);
     digitalWrite(ledPin, HIGH);
@@ -49,7 +35,6 @@ bool initWiFi() {
     Serial.println("Error setting up MDNS responder!");
   }
   Serial.println("mDNS responder started");
-  return true;
 }
 
 void setupAccessPoint() {
@@ -79,7 +64,7 @@ void setupAccessPoint() {
       if(p->isPost()){
         // HTTP POST ssid value
         if (p->name() == PARAM_INPUT_1) {
-          ssid = p->value().c_str();
+          String ssid = p->value().c_str();
           Serial.print("SSID set to: ");
           Serial.println(ssid);
           // Write file to save value
@@ -87,7 +72,7 @@ void setupAccessPoint() {
         }
         // HTTP POST pass value
         if (p->name() == PARAM_INPUT_2) {
-          pass = p->value().c_str();
+          String pass = p->value().c_str();
           Serial.print("Password set to: ");
           Serial.println(pass);
           // Write file to save value
