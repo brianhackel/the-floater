@@ -8,12 +8,10 @@
 #include <ESP8266mDNS.h>
 #include <LittleFS.h>
 
+#define CONFIG_MODE false
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-
-// Timer variables
-unsigned long previousMillis = 0;
-const long interval = 10000;  // interval to wait for Wi-Fi connection (milliseconds)
 
 boolean restart = false;
 const int ledPin = 2;
@@ -54,11 +52,26 @@ void setup() {
   Serial.begin(115200);
 
   initFS();
+  String ssid, pass;
 
-  if(initWiFi()) {
-    initMpu6050();
-    setupStateServer();
+  if (wifiCredentialsReady(&ssid, &pass)) {
+    if(CONFIG_MODE) {
+      initWiFi(ssid, pass);
+      initMpu6050(true);
+      setupStateServer();
+    } else {
+      // do the stuff we need to do to log once
+      initMpu6050(false);
+      float angle, temperature;
+      measure(&angle, &temperature);
+      if (!postOneUpdate(ssid, pass, angle, temperature)) {
+        // TODO: if we get here, it means we CAN'T connect to the wifi, then we have to drop down into configuration mode (probably by deleting the files
+      }
+      // then go to sleep, to wake in some amount of time
+    }
   } else {
+    // the submit POST will set the reset flag to true to signal the loop
+    // i think we should turn on a LONG flasher and have the post turn it off
     setupAccessPoint();
   }
 }
@@ -69,18 +82,6 @@ void loop() {
     ESP.restart();
   } else {
     MDNS.update();
-    // TODO: we want to flash the pin ONLY if we're not connected to WiFi
-//    digitalWrite(ledPin, LOW);
-//    delay(250);
-//    digitalWrite(ledPin, HIGH);
-//    delay(250);
-    /*
-    float angle = startingAngle - getDisplacementAngle();
-    Serial.print("Displacement Angle: ");
-    Serial.print(angle);
-    Serial.println(" degrees");
-
-    delay(2000);*/
   }
 }
 

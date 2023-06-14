@@ -11,7 +11,7 @@ RunningMedian angleSamples = RunningMedian(N_SAMPLES);
 RunningMedian tempSamples = RunningMedian(N_SAMPLES);
 
 // TODO: consider having this return a bool for success/failure
-void initMpu6050() {
+void initMpu6050(bool config) {
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
     while (1) {
@@ -23,11 +23,13 @@ void initMpu6050() {
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
   
-  float temperature;
-  measure(&startingAngle, &temperature);
-  Serial.print("starting Angle: ");
-  Serial.print(startingAngle);
-  Serial.println(" degrees");
+  if (config) {
+    float temperature;
+    measure(&startingAngle, &temperature);
+    Serial.print("starting Angle: ");
+    Serial.print(startingAngle);
+    Serial.println(" degrees");
+  }
 }
 
 void setupStateServer() {  

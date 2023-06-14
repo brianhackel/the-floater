@@ -1,3 +1,7 @@
+// File paths to save input values permanently
+const char* ssidPath = "/ssid.txt";
+const char* passPath = "/pass.txt";
+
 // Initialize LittleFS
 void initFS() {
   if (!LittleFS.begin()) {
@@ -5,6 +9,26 @@ void initFS() {
   }
   else{
     Serial.println("LittleFS mounted successfully");
+  }
+}
+
+bool wifiCredentialsReady(String *ssid, String *pass) {
+  // Load values saved in LittleFS
+  String _ssid = readFile(LittleFS, ssidPath);
+  String _pass = readFile(LittleFS, passPath);
+
+  Serial.println(_ssid);
+  Serial.println(_pass);
+
+  if(_ssid==""){
+    Serial.println("Undefined SSID.");
+    *ssid = "";
+    *pass = "";
+    return false;
+  } else {
+    *ssid = _ssid;
+    *pass = _pass;
+    return true;
   }
 }
 
