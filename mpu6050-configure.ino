@@ -19,6 +19,8 @@ void initMpu6050(bool config) {
     }
   }
 
+  mpu.enableSleep(false);
+
   mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);

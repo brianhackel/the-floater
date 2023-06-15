@@ -9,9 +9,12 @@
 #include <LittleFS.h>
 
 #define CONFIG_MODE false
+#define DEEPSLEEP_DURATION 60e6  // microseconds
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
+
+Adafruit_MPU6050 mpu;
 
 boolean restart = false;
 const int ledPin = 2;
@@ -68,6 +71,11 @@ void setup() {
         // TODO: if we get here, it means we CAN'T connect to the wifi, then we have to drop down into configuration mode (probably by deleting the files
       }
       // then go to sleep, to wake in some amount of time
+      Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
+      mpu.enableSleep(true);
+      delay(500);
+      ESP.deepSleep(DEEPSLEEP_DURATION);
+      delay(200);
     }
   } else {
     // the submit POST will set the reset flag to true to signal the loop
