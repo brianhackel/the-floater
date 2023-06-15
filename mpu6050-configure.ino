@@ -22,7 +22,8 @@ void initMpu6050(bool config) {
   mpu.enableSleep(false);
 
   mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
-  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  mpu.setGyroStandby(true, true, true);
+  //mpu.setTemperatureStandby(true);  // TODO: once we add a real temperature sensor
   mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
   
   if (config) {
@@ -32,6 +33,10 @@ void initMpu6050(bool config) {
     Serial.print(startingAngle);
     Serial.println(" degrees");
   }
+}
+
+void sleepMpu6050(bool shouldSleep) {
+  mpu.enableSleep(shouldSleep);
 }
 
 void setupStateServer() {  
@@ -52,13 +57,14 @@ void setupStateServer() {
 }
 
 void measure(float *angle, float *temperature) {
-  sensors_event_t a, g, temp;
+  sensors_event_t a, temp;
   float accelX, accelY, accelZ;
   int i;
   angleSamples.clear();
   tempSamples.clear();
   for (i = 0; i < N_SAMPLES; i++) {
-    mpu.getEvent(&a, &g, &temp);
+    mpu.getAccelerometerSensor()->getEvent(&a);
+    mpu.getTemperatureSensor()->getEvent(&temp);
     accelX = a.acceleration.x;
     accelY = a.acceleration.y;
     accelZ = a.acceleration.z;

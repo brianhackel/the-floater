@@ -14,8 +14,6 @@
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-Adafruit_MPU6050 mpu;
-
 boolean restart = false;
 const int ledPin = 2;
 
@@ -72,7 +70,7 @@ void setup() {
       }
       // then go to sleep, to wake in some amount of time
       Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
-      mpu.enableSleep(true);
+      sleepMpu6050(true);
       delay(500);
       ESP.deepSleep(DEEPSLEEP_DURATION);
       delay(200);
