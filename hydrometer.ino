@@ -56,8 +56,8 @@ void setup() {
   String ssid, pass;
 
   if (wifiCredentialsReady(&ssid, &pass)) {
+    initWiFi(ssid, pass);
     if(CONFIG_MODE) {
-      initWiFi(ssid, pass);
       initMpu6050(true);
       setupStateServer();
     } else {
@@ -65,7 +65,7 @@ void setup() {
       initMpu6050(false);
       float angle, temperature;
       measure(&angle, &temperature);
-      if (!postOneUpdate(ssid, pass, angle, temperature)) {
+      if (!postOneUpdate(angle, temperature)) {
         // TODO: if we get here, it means we CAN'T connect to the wifi, then we have to drop down into configuration mode (probably by deleting the files
       }
       // then go to sleep, to wake in some amount of time
