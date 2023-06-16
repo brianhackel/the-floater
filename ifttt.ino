@@ -1,3 +1,5 @@
+
+// FIXME: move the key to the configuration and into LittleFS
 #define KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
 #define EVENT "append_beer"                 // Webhooks Event Name
 
