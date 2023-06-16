@@ -1,38 +1,39 @@
-#include "AdafruitIO_WiFi.h"
-#define IO_USERNAME  "reddogbrewing"
-#define IO_KEY       "aio_gJDo38qF8q2wqc8VcWaS4UVGHoej"
-AdafruitIO_WiFi *io;
+#define KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
+#define EVENT "append_beer"                 // Webhooks Event Name
 
-bool postOneUpdate(String ssid, String pass, float angle, float temperature) {
-  connectAIO(ssid, pass);
-  feedWrite("tilt", angle);
-  feedWrite("temperature", temperature);
+bool postOneUpdate(float angle, float temperature) {
+  feedWrite(temperature, angle);
   return true;
 }
 
-
-void feedWrite(String name, float value){
-   // set up feeds
-  AdafruitIO_Feed *feed = io->feed(name.c_str());
-  Serial.println("sending value " + String(value) + " to feed " + name);
-  // send data to feed
-  feed->save(value);
-  // write data to AIO
-  io->run();
-}
-
-void connectAIO(String ssid, String pass) {
-  io = new AdafruitIO_WiFi(IO_USERNAME, IO_KEY, ssid.c_str(), pass.c_str());
-  Serial.println("Connecting to Adafruit IO...");
-  io->connect();
-
-  // wait for a connection
-  while (io->status() < AIO_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
-
-  // we are connected
-  Serial.println();
-  Serial.println(io->statusText());
+void feedWrite(float temperature, float tilt){
+  // construct the JSON payload
+  String jsonString = "";
+  jsonString += "{\"temp\":\"";
+  jsonString += temperature;
+  jsonString += "\",\"tilt\":\"";
+  jsonString += tilt;
+  jsonString += "\"}";
+  int jsonLength = jsonString.length();  
+  String lenString = String(jsonLength);
+  // connect to the Maker event server
+  WiFiClient client;
+  client.connect("maker.ifttt.com", 80);
+  // construct the POST request
+  String postString = "";
+  postString += "POST /trigger/";
+  postString += EVENT;
+  postString += "/with/key/";
+  postString += KEY;
+  postString += " HTTP/1.1\r\n";
+  postString += "Host: maker.ifttt.com\r\n";
+  postString += "Content-Type: application/json\r\n";
+  postString += "Content-Length: ";
+  postString += lenString + "\r\n";
+  postString += "\r\n";
+  postString += jsonString; // combine post request and JSON
+  
+  client.print(postString);
+  delay(500);
+  client.stop();
 }
