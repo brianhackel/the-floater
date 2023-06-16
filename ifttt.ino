@@ -3,39 +3,27 @@
 #define KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
 #define EVENT "append_beer"                 // Webhooks Event Name
 
-bool postOneUpdate(float angle, float temperature) {
-  feedWrite(temperature, angle);
-  return true;
-}
+#include <ESP8266HTTPClient.h>
 
-void feedWrite(float temperature, float tilt){
-  // construct the JSON payload
+bool postOneUpdate(float angle, float temperature) {
+  WiFiClient client;
+  HTTPClient http;
+  String url = "http://maker.ifttt.com/trigger/";
+  url += EVENT;
+  url += "/json/with/key/";
+  url += KEY;
+  http.begin(client, url);
+  
+  http.addHeader("Content-Type", "application/json");
   String jsonString = "";
   jsonString += "{\"temp\":\"";
   jsonString += temperature;
   jsonString += "\",\"tilt\":\"";
-  jsonString += tilt;
+  jsonString += angle;
   jsonString += "\"}";
-  int jsonLength = jsonString.length();  
-  String lenString = String(jsonLength);
-  // connect to the Maker event server
-  WiFiClient client;
-  client.connect("maker.ifttt.com", 80);
-  // construct the POST request
-  String postString = "";
-  postString += "POST /trigger/";
-  postString += EVENT;
-  postString += "/with/key/";
-  postString += KEY;
-  postString += " HTTP/1.1\r\n";
-  postString += "Host: maker.ifttt.com\r\n";
-  postString += "Content-Type: application/json\r\n";
-  postString += "Content-Length: ";
-  postString += lenString + "\r\n";
-  postString += "\r\n";
-  postString += jsonString; // combine post request and JSON
-  
-  client.print(postString);
-  delay(500);
-  client.stop();
+
+  // Send HTTP POST request
+  int httpResponseCode = http.POST(jsonString);
+  http.end();
+  return httpResponseCode == 200;
 }
