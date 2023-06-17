@@ -24,6 +24,7 @@ bool initWiFi(String ssid, String pass) {
     Serial.print(".");
     // TODO: we can also use Pin #0 (red LED) for general purpose blinking
     // TODO: use the TickTwo library to do it (probably in other files)
+    analogWrite(RED_LED, 55);
     digitalWrite(BLUE_LED, LOW);
     delay(250);
     digitalWrite(BLUE_LED, HIGH);
