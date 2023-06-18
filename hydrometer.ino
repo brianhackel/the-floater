@@ -59,16 +59,17 @@ void setup() {
   String ssid, pass;
 
   if (wifiCredentialsReady(&ssid, &pass)) {
+    // TODO: read teh return value and respond accordingly
     initWiFi(ssid, pass);
+    // TODO: read the return value and respond accordingly
+    initMpu6050();
     if(CONFIG_MODE) {
-      initMpu6050(true);
       setupStateServer();
     } else {
       // do the stuff we need to do to log once
-      initMpu6050(false);
-      float angle, temperature;
-      measure(&angle, &temperature);
-      temperature = t.getTemperatureF();
+      float angle;
+      measure(&angle);
+      float temperature = t.getTemperatureF();
       if (!postOneUpdate(angle, temperature)) {
         // TODO: if we get here, it means we CAN'T connect to the wifi, then we have to drop down into configuration mode (probably by deleting the files
       }
