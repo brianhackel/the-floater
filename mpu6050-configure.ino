@@ -2,16 +2,12 @@
 #include <RunningMedian.h>
 
 Adafruit_MPU6050 mpu;
-float startingAngle;
-// TODO: this should be moved to a calibration field
-#define TEMPERATURE_CALIBRATION_OFFSET_DEGREES_F 10
 #define N_SAMPLES 49
 #define N_SAMPLES_TO_AVG 29
 RunningMedian angleSamples = RunningMedian(N_SAMPLES);
-RunningMedian tempSamples = RunningMedian(N_SAMPLES);
 
 // TODO: consider having this return a bool for success/failure
-void initMpu6050(bool config) {
+void initMpu6050() {
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
     while (1) {
@@ -19,20 +15,12 @@ void initMpu6050(bool config) {
     }
   }
 
-  mpu.enableSleep(false);
+  sleepMpu6050(false);
 
   mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
   mpu.setGyroStandby(true, true, true);
-  //mpu.setTemperatureStandby(true);  // TODO: once we add a real temperature sensor
+  mpu.setTemperatureStandby(true);  // TODO: once we add a real temperature sensor
   mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
-  
-  if (config) {
-    float temperature;
-    measure(&startingAngle, &temperature);
-    Serial.print("starting Angle: ");
-    Serial.print(startingAngle);
-    Serial.println(" degrees");
-  }
 }
 
 void sleepMpu6050(bool shouldSleep) {
@@ -48,30 +36,28 @@ void setupStateServer() {
   server.serveStatic("/", LittleFS, "/");
 
   server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
-    float angle, temperature;
-    measure(&angle, &temperature);
-    request->send(200, "application/json", "{\"angle\":\"" + String(startingAngle - angle) + "\", \"temperature\":\"" + String(temperature) + "\"}");
+    float angle;
+    float temperature = 0.0;
+    measure(&angle);
+    // TODO: this needs to move out so we can incorporate temperature from the MCP9808
+    //request->send(200, "application/json", "{\"angle\":\"" + String(startingAngle - angle) + "\", \"temperature\":\"" + String(temperature) + "\"}");
+    request->send(200, "application/json", "{\"angle\":\"" + String(angle) + "\", \"temperature\":\"" + String(temperature) + "\"}");
   });
   
   server.begin();
 }
 
-void measure(float *angle, float *temperature) {
-  sensors_event_t a, temp;
+void measure(float *angle) {
+  sensors_event_t a;
   float accelX, accelY, accelZ;
   int i;
   angleSamples.clear();
-  tempSamples.clear();
   for (i = 0; i < N_SAMPLES; i++) {
     mpu.getAccelerometerSensor()->getEvent(&a);
-    mpu.getTemperatureSensor()->getEvent(&temp);
     accelX = a.acceleration.x;
     accelY = a.acceleration.y;
     accelZ = a.acceleration.z;
     angleSamples.add(acos(abs(accelY) / (sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ))) * 180.0 / M_PI);
-    tempSamples.add(temp.temperature);
   }
   *angle = angleSamples.getAverage(N_SAMPLES_TO_AVG);
-  *temperature = (tempSamples.getAverage(N_SAMPLES_TO_AVG) * (9.0/5.0)) + 32.0;
-  *temperature = *temperature - TEMPERATURE_CALIBRATION_OFFSET_DEGREES_F;
 }
