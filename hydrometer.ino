@@ -7,6 +7,7 @@
 #include <ESPAsyncTCP.h>
 #include <ESP8266mDNS.h>
 #include <LittleFS.h>
+#include "temperature.h"
 
 #define CONFIG_MODE false
 #define DEEPSLEEP_DURATION 60e6  // microseconds
@@ -16,6 +17,8 @@ AsyncWebServer server(80);
 
 boolean restart = false;
 const int ledPin = 2;
+
+Temperature t;
 
 void setup() {
   pinMode(ledPin, OUTPUT);
@@ -56,15 +59,17 @@ void setup() {
   String ssid, pass;
 
   if (wifiCredentialsReady(&ssid, &pass)) {
+    // TODO: read teh return value and respond accordingly
     initWiFi(ssid, pass);
+    // TODO: read the return value and respond accordingly
+    initMpu6050();
     if(CONFIG_MODE) {
-      initMpu6050(true);
       setupStateServer();
     } else {
       // do the stuff we need to do to log once
-      initMpu6050(false);
-      float angle, temperature;
-      measure(&angle, &temperature);
+      float angle;
+      measure(&angle);
+      float temperature = t.getTemperatureF();
       if (!postOneUpdate(angle, temperature)) {
         // TODO: if we get here, it means we CAN'T connect to the wifi, then we have to drop down into configuration mode (probably by deleting the files
       }
