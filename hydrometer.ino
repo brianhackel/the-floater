@@ -66,6 +66,8 @@ void setup() {
     initWiFi(ssid, pass); // FIXME: this now returns a bool; we should stop and respond if it's false
     // TODO: read the return value and respond accordingly
     initMpu6050();
+    // TODO: read the bool and respond accordingly
+    t.begin();
     if(CONFIG_MODE) {
       setupStateServer();
     } else {

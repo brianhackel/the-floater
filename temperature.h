@@ -7,7 +7,8 @@ class Temperature {
    Adafruit_MCP9808 tempsensor;
 
   public:
-   Temperature();
+   Temperature() {};
+   bool begin();
    float getTemperatureF();
 };
 #endif
