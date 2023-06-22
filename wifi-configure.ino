@@ -24,17 +24,9 @@ bool initWiFi(String ssid, String pass) {
   while (WiFi.status() != WL_CONNECTED && millis() - tStart < WIFI_CONNECT_TIMEOUT_MILLIS) {
     blueBlinker.update();
     Serial.print(".");
-    delay(500);
+    delay(250);
   }
   if (!WiFi.isConnected()) {
-    // blink red for 3 seconds to show failure
-    blueBlinker.pause();
-    redBlinker.start();
-    tStart = millis();
-    while (millis() - tStart < 3000) {
-      redBlinker.update();
-    }
-    redBlinker.stop();
     return false;
   }
 

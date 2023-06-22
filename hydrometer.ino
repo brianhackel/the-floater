@@ -62,13 +62,22 @@ void setup() {
 
   initFS();
   String ssid, pass;
+  long tStart;
 
   if (wifiCredentialsReady(&ssid, &pass)) {
-    initWiFi(ssid, pass); // FIXME: this now returns a bool; we should stop and respond if it's false
-    // TODO: read the return value and respond accordingly
-    initMpu6050();
-    // TODO: read the bool and respond accordingly
-    t.begin();
+    if (!initWiFi(ssid, pass)) {
+      // blink red for 3 seconds to show failure
+      blueBlinker.pause();
+      redBlinker.start();
+      tStart = millis();
+      while (millis() - tStart < 3000) {
+        redBlinker.update();
+      }
+      redBlinker.stop();
+      // TODO: consider purging the files to drop down to captive portal mode
+    }
+    initMpu6050(); // TODO: read the bool and respond accordingly
+    t.begin(); // TODO: read the bool and respond accordingly
     if(CONFIG_MODE) {
       setupStateServer();
     } else {
@@ -77,7 +86,15 @@ void setup() {
       measure(&angle);
       float temperature = t.getTemperatureF();
       if (!postOneUpdate(angle, temperature)) {
-        // TODO: if we get here, it means we CAN'T connect to the wifi, then we have to drop down into configuration mode (probably by deleting the files)
+        // we failed to post an update
+        // blink red for 3 seconds to show failure
+        blueBlinker.pause();
+        redBlinker.start();
+        tStart = millis();
+        while (millis() - tStart < 3000) {
+          redBlinker.update();
+        }
+        redBlinker.stop();
       }
       // then go to sleep, to wake in some amount of time
       Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
@@ -90,6 +107,8 @@ void setup() {
     // the submit POST will set the reset flag to true to signal the loop
     // i think we should turn on a LONG flasher and have the post turn it off
     setupAccessPoint();
+    blueBlinker.start();
+    redBlinker.start();
   }
 }
 
@@ -98,7 +117,9 @@ void loop() {
     delay(5000);
     ESP.restart();
   } else {
-    // TODO: probably want to blink here to show we're waiting on a connection to a server
+    // alternate red and blue
+    blueBlinker.update();
+    redBlinker.update();
     MDNS.update();
   }
 }

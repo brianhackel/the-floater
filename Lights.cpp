@@ -5,6 +5,8 @@ Lights::Lights(int bluePin, int redPin) {
   _redPin = redPin;
   pinMode(_redPin, OUTPUT);
   pinMode(_bluePin, OUTPUT);
+  digitalWrite(bluePin, HIGH);
+  digitalWrite(redPin, HIGH);
 }
 
 void Lights::flashRed(int millis) {
