@@ -64,7 +64,6 @@ void setup() {
   String ssid, pass;
 
   if (wifiCredentialsReady(&ssid, &pass)) {
-    redBlinker.start();
     initWiFi(ssid, pass); // FIXME: this now returns a bool; we should stop and respond if it's false
     // TODO: read the return value and respond accordingly
     initMpu6050();
@@ -74,14 +73,12 @@ void setup() {
       setupStateServer();
     } else {
       // do the stuff we need to do to log once
-      redBlinker.update();
       float angle;
       measure(&angle);
       float temperature = t.getTemperatureF();
       if (!postOneUpdate(angle, temperature)) {
         // TODO: if we get here, it means we CAN'T connect to the wifi, then we have to drop down into configuration mode (probably by deleting the files)
       }
-      redBlinker.update();
       // then go to sleep, to wake in some amount of time
       Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
       sleepMpu6050(true);
@@ -101,6 +98,7 @@ void loop() {
     delay(5000);
     ESP.restart();
   } else {
+    // TODO: probably want to blink here to show we're waiting on a connection to a server
     MDNS.update();
   }
 }

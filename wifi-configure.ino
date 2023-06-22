@@ -1,4 +1,4 @@
-#define WIFI_CONNECT_TIMEOUT_MILLIS 10000
+#define WIFI_CONNECT_TIMEOUT_MILLIS 30000
 
 // Search for parameter in HTTP POST request
 const char* PARAM_INPUT_1 = "ssid";
@@ -11,6 +11,7 @@ String hostname = "hydrometer";
 
 // Initialize WiFi
 bool initWiFi(String ssid, String pass) {
+  blueBlinker.start();
   Serial.println(ssid);
   Serial.println(pass);
 
@@ -21,18 +22,19 @@ bool initWiFi(String ssid, String pass) {
   uint32_t tStart = millis();
   Serial.println("Connecting to WiFi...");
   while (WiFi.status() != WL_CONNECTED && millis() - tStart < WIFI_CONNECT_TIMEOUT_MILLIS) {
+    blueBlinker.update();
     Serial.print(".");
-    // TODO: we can also use Pin #0 (red LED) for general purpose blinking
-    // TODO: use the TickTwo library to do it (probably in other files)
-    analogWrite(RED_LED, 55);
-    digitalWrite(BLUE_LED, LOW);
-    delay(250);
-    digitalWrite(BLUE_LED, HIGH);
-    delay(250);
+    delay(500);
   }
-  digitalWrite(BLUE_LED, LOW);
   if (!WiFi.isConnected()) {
-    // TODO: maybe blink to show failure
+    // blink red for 3 seconds to show failure
+    blueBlinker.pause();
+    redBlinker.start();
+    tStart = millis();
+    while (millis() - tStart < 3000) {
+      redBlinker.update();
+    }
+    redBlinker.stop();
     return false;
   }
 
