@@ -10,11 +10,16 @@
 #include "temperature.h"
 #include "Lights.h"
 #include "FileSystem.h"
+#include "IFTTT.h"
 
 #define CONFIG_MODE false
 #define DEEPSLEEP_DURATION 60e6  // microseconds
 #define RED_LED 0
 #define BLUE_LED 2
+
+// FIXME: move the key to the configuration and into LittleFS
+#define IFTTT_KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
+#define IFTTT_EVENT "append_beer"                 // Webhooks Event Name
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -26,6 +31,7 @@ Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.flashRed(250);}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.flashBlue(250);}, 250, 0, MILLIS);
 FileSystem fileSys;
+IFTTT poster(IFTTT_KEY, IFTTT_EVENT);
 
 void setup() {
 /*  int reason = ESP.getResetInfoPtr()->reason;
@@ -87,7 +93,7 @@ void setup() {
       float angle;
       measure(&angle);
       float temperature = t.getTemperatureF();
-      if (!postOneUpdate(angle, temperature)) {
+      if (poster.postOneUpdate(angle, temperature)) {
         // we failed to post an update
         // blink red for 3 seconds to show failure
         blueBlinker.pause();
