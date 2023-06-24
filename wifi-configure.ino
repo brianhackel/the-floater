@@ -1,3 +1,5 @@
+#define WIFI_CONNECT_TIMEOUT_MILLIS 30000
+
 // Search for parameter in HTTP POST request
 const char* PARAM_INPUT_1 = "ssid";
 const char* PARAM_INPUT_2 = "pass";
@@ -8,7 +10,8 @@ IPAddress subnet(255,255,255,0);
 String hostname = "hydrometer";
 
 // Initialize WiFi
-void initWiFi(String ssid, String pass) {
+bool initWiFi(String ssid, String pass) {
+  blueBlinker.start();
   Serial.println(ssid);
   Serial.println(pass);
 
@@ -16,25 +19,24 @@ void initWiFi(String ssid, String pass) {
   WiFi.hostname(hostname);
   WiFi.begin(ssid.c_str(), pass.c_str());
 
+  uint32_t tStart = millis();
   Serial.println("Connecting to WiFi...");
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED && millis() - tStart < WIFI_CONNECT_TIMEOUT_MILLIS) {
+    blueBlinker.update();
     Serial.print(".");
-    // TODO: maybe a timeout?
-    // TODO: we can also use Pin #0 (red LED) for general purpose blinking
-    // TODO: use the TickTwo library to do it (probably in other files)
-    digitalWrite(ledPin, LOW);
-    delay(250);
-    digitalWrite(ledPin, HIGH);
     delay(250);
   }
-  digitalWrite(ledPin, LOW);
+  if (!WiFi.isConnected()) {
+    return false;
+  }
 
   Serial.println(WiFi.localIP());
 
   if (!MDNS.begin(hostname)) {
     Serial.println("Error setting up MDNS responder!");
   }
-  Serial.println("mDNS responder started");
+  Serial.println("mDNS responder started. connect at " + hostname + ".local");
+  return true;
 }
 
 void setupAccessPoint() {

@@ -6,21 +6,19 @@ Adafruit_MPU6050 mpu;
 #define N_SAMPLES_TO_AVG 29
 RunningMedian angleSamples = RunningMedian(N_SAMPLES);
 
-// TODO: consider having this return a bool for success/failure
-void initMpu6050() {
+bool initMpu6050() {
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
-    while (1) {
-      delay(10);
-    }
+    return false;
   }
 
   sleepMpu6050(false);
 
   mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
   mpu.setGyroStandby(true, true, true);
-  mpu.setTemperatureStandby(true);  // TODO: once we add a real temperature sensor
+  mpu.setTemperatureStandby(true);
   mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
+  return true;
 }
 
 void sleepMpu6050(bool shouldSleep) {
