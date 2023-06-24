@@ -6,10 +6,10 @@
 #include <ESPAsyncWebSrv.h>
 #include <ESPAsyncTCP.h>
 #include <ESP8266mDNS.h>
-#include <LittleFS.h>
 #include <TickTwo.h>
 #include "temperature.h"
 #include "Lights.h"
+#include "FileSystem.h"
 
 #define CONFIG_MODE false
 #define DEEPSLEEP_DURATION 60e6  // microseconds
@@ -25,6 +25,7 @@ Temperature t;
 Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.flashRed(250);}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.flashBlue(250);}, 250, 0, MILLIS);
+FileSystem fileSys;
 
 void setup() {
 /*  int reason = ESP.getResetInfoPtr()->reason;
@@ -60,11 +61,12 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  initFS();
+  // TODO: returns a bool, error checking please
+  fileSys.init();
   String ssid, pass;
   long tStart;
 
-  if (wifiCredentialsReady(&ssid, &pass)) {
+  if (fileSys.wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
       // blink red for 3 seconds to show failure
       blueBlinker.pause();

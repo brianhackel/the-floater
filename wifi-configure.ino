@@ -70,7 +70,7 @@ void setupAccessPoint() {
           Serial.print("SSID set to: ");
           Serial.println(ssid);
           // Write file to save value
-          writeFile(LittleFS, ssidPath, ssid.c_str());
+          FileSystem::writeSsidToFile(ssid.c_str());
         }
         // HTTP POST pass value
         if (p->name() == PARAM_INPUT_2) {
@@ -78,7 +78,7 @@ void setupAccessPoint() {
           Serial.print("Password set to: ");
           Serial.println(pass);
           // Write file to save value
-          writeFile(LittleFS, passPath, pass.c_str());
+          FileSystem::writePassToFile(pass.c_str());
         }
 
         //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
