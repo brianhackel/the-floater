@@ -39,6 +39,23 @@ bool initWiFi(String ssid, String pass) {
   return true;
 }
 
+void setupStateServer() {
+  // Route for root / web page
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/index.html", "text/html", false);
+  });
+  
+  server.serveStatic("/", LittleFS, "/");
+
+  server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String msg = "{\"angle\":\"" + String(getAngle()) + "\", \"temperature\":\"" + String(getTemperature()) + "\"}";
+    request->send_P(200, "application/json", msg.c_str());
+//    request->send(200, "application/json", "{\"angle\":\"" + String(77.0) + "\", \"temperature\":\"" + String(88.0) + "\"}");
+  });
+  
+  server.begin();
+}
+
 void setupAccessPoint() {
   // Connect to Wi-Fi network with SSID and password
   Serial.println("Setting AP (Access Point)");

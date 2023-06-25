@@ -1,5 +1,4 @@
 #include <Wire.h>
-#include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -11,8 +10,9 @@
 #include "Lights.h"
 #include "FileSystem.h"
 #include "IFTTT.h"
+#include "Mpu6050.h"
 
-#define CONFIG_MODE false
+#define CONFIG_MODE true
 #define DEEPSLEEP_DURATION 60e6  // microseconds
 #define RED_LED 0
 #define BLUE_LED 2
@@ -32,6 +32,15 @@ TickTwo redBlinker([](){lights.flashRed(250);}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.flashBlue(250);}, 250, 0, MILLIS);
 FileSystem fileSys;
 IFTTT poster(IFTTT_KEY, IFTTT_EVENT);
+Mpu6050 mpu;
+
+float getAngle() {
+  return mpu.measureAngle();
+}
+
+float getTemperature() {
+  return t.getTemperatureF();
+}
 
 void setup() {
 /*  int reason = ESP.getResetInfoPtr()->reason;
@@ -84,16 +93,27 @@ void setup() {
       redBlinker.stop();
       // TODO: consider purging the files to drop down to captive portal mode
     }
-    initMpu6050(); // TODO: read the bool and respond accordingly
+    mpu.init(); // TODO: read the bool and respond accordingly
     t.begin(); // TODO: read the bool and respond accordingly
     if(CONFIG_MODE) {
-      setupStateServer();
+        // Route for root / web page
+        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+          request->send(LittleFS, "/index.html", "text/html", false);
+        });
+        
+        server.serveStatic("/", LittleFS, "/");
+
+        server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
+          String msg = "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}";
+          request->send(200, "application/json", msg);
+        });
+        
+        server.begin();
     } else {
       // do the stuff we need to do to log once
-      float angle;
-      measure(&angle);
+      float angle = mpu.measureAngle();
       float temperature = t.getTemperatureF();
-      if (poster.postOneUpdate(angle, temperature)) {
+      if (!poster.postOneUpdate(angle, temperature)) {
         // we failed to post an update
         // blink red for 3 seconds to show failure
         blueBlinker.pause();
@@ -106,7 +126,7 @@ void setup() {
       }
       // then go to sleep, to wake in some amount of time
       Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
-      sleepMpu6050(true);
+      mpu.sleep();
       delay(500);
       ESP.deepSleep(DEEPSLEEP_DURATION);
       delay(200);
@@ -126,7 +146,8 @@ void loop() {
     ESP.restart();
   } else {
     // alternate red and blue
-    blueBlinker.update();
+    // FIXME: figure out WHY i can't blink here when i'm in CONFIG_MODE
+    //blueBlinker.update();
     redBlinker.update();
     MDNS.update();
   }
