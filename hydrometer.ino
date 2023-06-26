@@ -12,7 +12,7 @@
 #include "IFTTT.h"
 #include "Mpu6050.h"
 
-#define CONFIG_MODE true
+#define CONFIG_MODE false
 #define DEEPSLEEP_DURATION 60e6  // microseconds
 #define RED_LED 0
 #define BLUE_LED 2
@@ -28,19 +28,11 @@ boolean restart = false;
 
 Temperature t;
 Lights lights(BLUE_LED, RED_LED);
-TickTwo redBlinker([](){lights.flashRed(250);}, 250, 0, MILLIS);
-TickTwo blueBlinker([](){lights.flashBlue(250);}, 250, 0, MILLIS);
+TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
+TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 FileSystem fileSys;
 IFTTT poster(IFTTT_KEY, IFTTT_EVENT);
 Mpu6050 mpu;
-
-float getAngle() {
-  return mpu.measureAngle();
-}
-
-float getTemperature() {
-  return t.getTemperatureF();
-}
 
 void setup() {
 /*  int reason = ESP.getResetInfoPtr()->reason;
@@ -84,31 +76,40 @@ void setup() {
   if (fileSys.wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
       // blink red for 3 seconds to show failure
-      blueBlinker.pause();
-      redBlinker.start();
       tStart = millis();
+      redBlinker.start();
       while (millis() - tStart < 3000) {
         redBlinker.update();
       }
       redBlinker.stop();
-      // TODO: consider purging the files to drop down to captive portal mode
+      // TODO: purging the files to drop down to captive portal mode
+      fileSys.writeSsidToFile("");
+      fileSys.writePassToFile("");
+      ESP.restart();
     }
+    // at this point, we have successfully connected to WiFi
+    blueBlinker.stop();
+    lights.turnOffBlue();
     mpu.init(); // TODO: read the bool and respond accordingly
     t.begin(); // TODO: read the bool and respond accordingly
     if(CONFIG_MODE) {
-        // Route for root / web page
-        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-          request->send(LittleFS, "/index.html", "text/html", false);
-        });
-        
-        server.serveStatic("/", LittleFS, "/");
+      // Route for root / web page
+      server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/index.html", "text/html", false);
+      });
+      
+      server.serveStatic("/", LittleFS, "/");
 
-        server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
-          String msg = "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}";
-          request->send(200, "application/json", msg);
-        });
-        
-        server.begin();
+      server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String msg = "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}";
+        request->send(200, "application/json", msg);
+      });
+      
+      server.begin();
+      blueBlinker.stop();
+      // we want the config mode to blink SLOW
+      blueBlinker = TickTwo([](){lights.toggleBlue();}, 1000, 0, MILLIS);
+      blueBlinker.start();
     } else {
       // do the stuff we need to do to log once
       float angle = mpu.measureAngle();
@@ -116,13 +117,13 @@ void setup() {
       if (!poster.postOneUpdate(angle, temperature)) {
         // we failed to post an update
         // blink red for 3 seconds to show failure
-        blueBlinker.pause();
-        redBlinker.start();
         tStart = millis();
+        redBlinker.start();
         while (millis() - tStart < 3000) {
           redBlinker.update();
         }
         redBlinker.stop();
+        lights.turnOffRed();
       }
       // then go to sleep, to wake in some amount of time
       Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
@@ -145,9 +146,7 @@ void loop() {
     delay(5000);
     ESP.restart();
   } else {
-    // alternate red and blue
-    // FIXME: figure out WHY i can't blink here when i'm in CONFIG_MODE
-    //blueBlinker.update();
+    blueBlinker.update();
     redBlinker.update();
     MDNS.update();
   }

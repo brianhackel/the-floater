@@ -11,7 +11,6 @@ String hostname = "hydrometer";
 
 // Initialize WiFi
 bool initWiFi(String ssid, String pass) {
-  blueBlinker.start();
   Serial.println(ssid);
   Serial.println(pass);
 
@@ -21,11 +20,13 @@ bool initWiFi(String ssid, String pass) {
 
   uint32_t tStart = millis();
   Serial.println("Connecting to WiFi...");
+  blueBlinker.start();
   while (WiFi.status() != WL_CONNECTED && millis() - tStart < WIFI_CONNECT_TIMEOUT_MILLIS) {
     blueBlinker.update();
     Serial.print(".");
     delay(250);
   }
+  blueBlinker.stop();
   if (!WiFi.isConnected()) {
     return false;
   }
@@ -48,9 +49,7 @@ void setupStateServer() {
   server.serveStatic("/", LittleFS, "/");
 
   server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String msg = "{\"angle\":\"" + String(getAngle()) + "\", \"temperature\":\"" + String(getTemperature()) + "\"}";
-    request->send_P(200, "application/json", msg.c_str());
-//    request->send(200, "application/json", "{\"angle\":\"" + String(77.0) + "\", \"temperature\":\"" + String(88.0) + "\"}");
+    request->send(200, "application/json", "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}");
   });
   
   server.begin();

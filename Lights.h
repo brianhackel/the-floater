@@ -6,11 +6,14 @@ class Lights {
   private:
    int _bluePin;
    int _redPin;
-   void flash(int whichPin, int millis);
+   bool _redState = false;
+   bool _blueState = false;
 
   public:
    Lights(int bluePin, int redPin);
-   void flashRed(int millis);
-   void flashBlue(int millis);
+   void toggleRed();
+   void toggleBlue();
+   void turnOffRed();
+   void turnOffBlue();
 };
 #endif
