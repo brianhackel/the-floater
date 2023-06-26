@@ -1,21 +1,17 @@
-// File paths to save input values permanently
-const char* ssidPath = "/ssid.txt";
-const char* passPath = "/pass.txt";
+#include "FileSystem.h"
 
-// Initialize LittleFS
-void initFS() {
-  if (!LittleFS.begin()) {
-    Serial.println("An error has occurred while mounting LittleFS");
-  }
-  else{
-    Serial.println("LittleFS mounted successfully");
-  }
+const char* FileSystem::ssidPath = "/ssid.txt";
+const char* FileSystem::passPath = "/pass.txt";
+
+
+bool FileSystem::init() {
+  return LittleFS.begin();
 }
 
-bool wifiCredentialsReady(String *ssid, String *pass) {
+bool FileSystem::wifiCredentialsReady(String *ssid, String *pass) {
   // Load values saved in LittleFS
-  String _ssid = readFile(LittleFS, ssidPath);
-  String _pass = readFile(LittleFS, passPath);
+  String _ssid = readFile(ssidPath);
+  String _pass = readFile(passPath);
 
   Serial.println(_ssid);
   Serial.println(_pass);
@@ -33,10 +29,10 @@ bool wifiCredentialsReady(String *ssid, String *pass) {
 }
 
 // Read File from LittleFS
-String readFile(fs::FS &fs, const char * path){
+String FileSystem::readFile(const char * path){
   Serial.printf("Reading file: %s\r\n", path);
 
-  File file = fs.open(path, "r");
+  File file = LittleFS.open(path, "r");
   if(!file || file.isDirectory()){
     Serial.println("- failed to open file for reading");
     return String();
@@ -52,10 +48,10 @@ String readFile(fs::FS &fs, const char * path){
 }
 
 // Write file to LittleFS
-void writeFile(fs::FS &fs, const char * path, const char * message){
+void FileSystem::writeFile(const char * path, const char * message) {
   Serial.printf("Writing file: %s\r\n", path);
 
-  File file = fs.open(path, "w");
+  File file = LittleFS.open(path, "w");
   if(!file){
     Serial.println("- failed to open file for writing");
     return;

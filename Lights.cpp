@@ -9,16 +9,22 @@ Lights::Lights(int bluePin, int redPin) {
   digitalWrite(redPin, HIGH);
 }
 
-void Lights::flashRed(int millis) {
-  flash(_redPin, millis);
+void Lights::toggleRed() {
+  _redState = !_redState;
+  digitalWrite(_redPin, _redState);
 }
 
-void Lights::flashBlue(int millis){
-  flash(_bluePin, millis);
+void Lights::toggleBlue() {
+  _blueState = !_blueState;
+  digitalWrite(_bluePin, _blueState);
 }
 
-void Lights::flash(int whichPin, int millis) {
-  digitalWrite(whichPin, LOW);
-  delay(millis);
-  digitalWrite(whichPin, HIGH);
+void Lights::turnOffRed() {
+    digitalWrite(_redPin, false);
+    _redState = false;
+}
+
+void Lights::turnOffBlue() {
+    digitalWrite(_bluePin, false);
+    _blueState = false;
 }
