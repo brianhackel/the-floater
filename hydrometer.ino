@@ -19,11 +19,8 @@
 #define IFTTT_KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
 #define IFTTT_EVENT "append_beer"                 // Webhooks Event Name
 
-// Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-
 boolean restart = false;
-
 Temperature t;
 Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
@@ -45,7 +42,7 @@ void flashError() {
 }
 
 void sleep() {
-  Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
+  Serial.println("going to sleep for " + String(DEEPSLEEP_DURATION / 1000000) + " seconds");
   mpu.sleep();
   delay(500);
   ESP.deepSleep(DEEPSLEEP_DURATION);

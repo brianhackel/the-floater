@@ -22,6 +22,7 @@ bool initWiFi(String ssid, String pass) {
     Serial.print(".");
     delay(250);
   }
+  Serial.println();
   blueBlinker.stop();
   if (!WiFi.isConnected()) {
     return false;

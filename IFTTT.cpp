@@ -18,6 +18,7 @@ bool IFTTT::postOneUpdate(float angle, float temperature) {
   jsonString += "\"}";
 
   // Send HTTP POST request
+  Serial.println("posting to IFTTT: " + jsonString);
   int httpResponseCode = http.POST(jsonString);
   http.end();
   return httpResponseCode == 200;
