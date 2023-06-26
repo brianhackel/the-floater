@@ -1,5 +1,3 @@
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncWebSrv.h>
@@ -33,6 +31,26 @@ TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 FileSystem fileSys;
 IFTTT poster(IFTTT_KEY, IFTTT_EVENT);
 Mpu6050 mpu;
+
+void flashError() {
+  // blink red for 3 seconds to show failure
+  unsigned long tStart = millis();
+  blueBlinker.stop();
+  redBlinker.start();
+  while (millis() - tStart < 3000) {
+    redBlinker.update();
+  }
+  redBlinker.stop();
+  lights.turnOffRed();
+}
+
+void sleep() {
+  Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
+  mpu.sleep();
+  delay(500);
+  ESP.deepSleep(DEEPSLEEP_DURATION);
+  delay(200);
+}
 
 void setup() {
 /*  int reason = ESP.getResetInfoPtr()->reason;
@@ -68,21 +86,18 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  // TODO: returns a bool, error checking please
-  fileSys.init();
+  if (!fileSys.init()) {
+    Serial.println("File System failed to init");
+    flashError();
+    ESP.restart();
+  }
   String ssid, pass;
   long tStart;
 
   if (fileSys.wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
-      // blink red for 3 seconds to show failure
-      tStart = millis();
-      redBlinker.start();
-      while (millis() - tStart < 3000) {
-        redBlinker.update();
-      }
-      redBlinker.stop();
-      // TODO: purging the files to drop down to captive portal mode
+      flashError();
+      // purging the files to drop down to captive portal mode
       fileSys.writeSsidToFile("");
       fileSys.writePassToFile("");
       ESP.restart();
@@ -90,47 +105,30 @@ void setup() {
     // at this point, we have successfully connected to WiFi
     blueBlinker.stop();
     lights.turnOffBlue();
-    mpu.init(); // TODO: read the bool and respond accordingly
-    t.begin(); // TODO: read the bool and respond accordingly
+    if (!mpu.init()) {
+      Serial.println("Could not init accelerometer");
+      flashError();
+      ESP.restart();
+    }
+    if (!t.begin()) {
+      Serial.println("Could not init temperature sensor");
+      flashError();
+      ESP.restart();
+    }
     if(CONFIG_MODE) {
-      // Route for root / web page
-      server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/index.html", "text/html", false);
-      });
-      
-      server.serveStatic("/", LittleFS, "/");
-
-      server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String msg = "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}";
-        request->send(200, "application/json", msg);
-      });
-      
-      server.begin();
+      setupStateServer();
       blueBlinker.stop();
       // we want the config mode to blink SLOW
       blueBlinker = TickTwo([](){lights.toggleBlue();}, 1000, 0, MILLIS);
       blueBlinker.start();
     } else {
       // do the stuff we need to do to log once
-      float angle = mpu.measureAngle();
-      float temperature = t.getTemperatureF();
-      if (!poster.postOneUpdate(angle, temperature)) {
+      if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF())) {
         // we failed to post an update
         // blink red for 3 seconds to show failure
-        tStart = millis();
-        redBlinker.start();
-        while (millis() - tStart < 3000) {
-          redBlinker.update();
-        }
-        redBlinker.stop();
-        lights.turnOffRed();
+        flashError();
       }
-      // then go to sleep, to wake in some amount of time
-      Serial.println("going to sleep: " + String(DEEPSLEEP_DURATION / 1000000));
-      mpu.sleep();
-      delay(500);
-      ESP.deepSleep(DEEPSLEEP_DURATION);
-      delay(200);
+      sleep();
     }
   } else {
     // the submit POST will set the reset flag to true to signal the loop
@@ -148,7 +146,9 @@ void loop() {
   } else {
     blueBlinker.update();
     redBlinker.update();
-    MDNS.update();
+    if (CONFIG_MODE) {
+      MDNS.update();
+    }
   }
 }
 
