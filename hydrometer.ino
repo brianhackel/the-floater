@@ -10,7 +10,6 @@
 #include "IFTTT.h"
 #include "Mpu6050.h"
 
-#define CONFIG_MODE false
 #define DEEPSLEEP_DURATION 60e6  // microseconds
 #define RED_LED 0
 #define BLUE_LED 2
@@ -28,6 +27,7 @@ TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 FileSystem fileSys;
 IFTTT poster(IFTTT_KEY, IFTTT_EVENT);
 Mpu6050 mpu;
+bool configMode = false;
 
 void flashError() {
   // blink red for 3 seconds to show failure
@@ -91,6 +91,8 @@ void setup() {
   String ssid, pass;
   long tStart;
 
+  configMode = fileSys.isConfigMode();
+
   if (fileSys.wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
       flashError();
@@ -112,7 +114,7 @@ void setup() {
       flashError();
       ESP.restart();
     }
-    if(CONFIG_MODE) {
+    if(configMode) {
       setupStateServer();
       blueBlinker.stop();
       // we want the config mode to blink SLOW
@@ -143,7 +145,7 @@ void loop() {
   } else {
     blueBlinker.update();
     redBlinker.update();
-    if (CONFIG_MODE) {
+    if (configMode) {
       MDNS.update();
     }
   }

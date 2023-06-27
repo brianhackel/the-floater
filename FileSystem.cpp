@@ -2,6 +2,7 @@
 
 const char* FileSystem::ssidPath = "/ssid.txt";
 const char* FileSystem::passPath = "/pass.txt";
+const char* FileSystem::configModePath = "/configMode.txt";
 
 
 bool FileSystem::init() {
@@ -26,6 +27,11 @@ bool FileSystem::wifiCredentialsReady(String *ssid, String *pass) {
     *pass = _pass;
     return true;
   }
+}
+
+bool FileSystem::isConfigMode() {
+  String _configMode = readFile(configModePath);
+  return _configMode == "1";
 }
 
 // Read File from LittleFS

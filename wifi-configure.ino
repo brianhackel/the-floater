@@ -28,7 +28,7 @@ bool initWiFi(String ssid, String pass) {
     return false;
   }
 
-  if (CONFIG_MODE) {
+  if (configMode) {
     Serial.println(WiFi.localIP());
     if (!MDNS.begin(hostname)) {
       Serial.println("Error setting up MDNS responder!");
@@ -80,17 +80,16 @@ void setupAccessPoint() {
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
         if (p->name() == "ssid") {
-          String ssid = p->value().c_str();
-          FileSystem::writeSsidToFile(ssid.c_str());
+          FileSystem::writeSsidToFile(p->value().c_str());
         }
         if (p->name() == "pass") {
-          String pass = p->value().c_str();
-          FileSystem::writePassToFile(pass.c_str());
+          FileSystem::writePassToFile(p->value().c_str());
         }
       }
     }
+    FileSystem::setConfigMode(true);
     restart = true;
-    request->send(200, "text/plain", "Done. HYDORMETER will restart, connect to your router and go to http://" + hostname + ".local");
+    request->send(200, "text/plain", "Done. HYDROMETER will restart. Please connect to the SSID network and go to http://" + hostname + ".local for configuration");
   });
   server.begin();
 }
