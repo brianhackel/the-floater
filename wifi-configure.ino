@@ -50,6 +50,30 @@ void setupStateServer() {
   server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "application/json", "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}");
   });
+
+  server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
+    int params = request->params();
+    for(int i=0;i<params;i++){
+      AsyncWebParameter* p = request->getParam(i);
+      if(p->isPost()){
+        if (p->name() == "time") {
+          Serial.println("time in minutes = " + p->value());
+          // TODO: fill me in
+          //FileSystem::writeSsidToFile(p->value().c_str());
+        }
+        if (p->name() == "logType") {
+          Serial.println("logType = " + p->value());
+          // TODO: fill me in
+          //FileSystem::writePassToFile(p->value().c_str());
+        }
+        // TODO: add all the other ones and branch accordingly
+      }
+    }
+    // TODO: turn this line back on after testing
+    //FileSystem::setConfigMode(false);
+    restart = true;
+    request->send(200, "text/plain", "Done. HYDROMETER will restart and begin logging.");
+  });
   
   server.begin();
 }

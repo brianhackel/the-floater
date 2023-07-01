@@ -10,9 +10,9 @@
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
     <script>
     $(document).ready(function(){
-      //setInterval(function(){
-      //  $('#state').load('/state');
-      // }, 2000);
+      setInterval(function(){
+        $('#state').load('/state');
+      }, 2000);
       $("#configuration input").each(function () {
         $(this).rules("add", {
           required: true
