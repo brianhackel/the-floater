@@ -12,7 +12,12 @@
     $(document).ready(function(){
       //setInterval(function(){
       //  $('#state').load('/state');
-      // }, 2000)
+      // }, 2000);
+      $("#configuration input").each(function () {
+        $(this).rules("add", {
+          required: true
+        });
+      });
       $('.loggingForm').hide();
     });
     </script>
@@ -24,12 +29,14 @@
     <div class="content">
       <div class="card-grid">
         <div class="card">
+          <div class="card-title">Current State</div>
           <div id="state" class="state">Loading...</div>
         </div>
         <div class="card">
+          <div class="card-title">Configuration</div>
           <form id="configuration" action="/" method="POST">
               <label for="time">Time Between Logs:</label>
-              <input class="no-spinner" type="number" style="width:100px" id="time" name="time">Minutes<br>
+              <input class="no-spinner" type="number" id="time" name="time" value="30">Minutes<br>
               <label for="logType">Log To:</label>
               <select name="logType" id="logType">
                 <option value="" disabled selected>Choose One</option>
@@ -38,14 +45,24 @@
               </select><br>
               <div id="loggingInfo">
                 <div class='loggingForm' id="logging-ifttt">
-                  <label for="iftttKey">Webhooks Key</label>
+                  <label for="iftttKey">Webhooks Key:</label>
                   <input type="password" id="iftttKey" name="iftttKey"><br>
-                  <label for="iftttEvent">Event Name</label>
+                  <label for="iftttEvent">Event Name:</label>
                   <input type="text" id="iftttEvent" name="iftttEvent"><br>
                 </div>
                 <div class='loggingForm' id="logging-brewersFriend">
-                  <label for="brewersFriendKey">Key</label>
+                  <label for="brewersFriendKey">API Key:</label>
                   <input type="password" id="brewersFriendKey" name="brewersFriendKey"><br>
+                  <div class="card-title">Polynomial Coefficients for tilt to gravity fit</div>
+                  <div class="inputTable">
+                    <input class="inputTableCell no-spinner" type="number" id="bfCubedCoeff" name="'bfCubedCoeff">
+                    <label>x<sup>3</sup> + </label>
+                    <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="'bfSquaredCoeff">
+                    <label>x<sup>2</sup> + </label>
+                    <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="'bfFirstDegreeCoeff">
+                    <label>x + </label>
+                    <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="'bfZeroDegreeCoeff">
+                  </div>
                   <!-- Need to put the tilt to gravity calculation here (cooefs of 3rd order polynomial)-->
                 </div>
               </div>
@@ -73,16 +90,14 @@
       $("#configuration").validate({
         errorClass: "my-error-class",
         errorPlacement: function(error, element) {
-          error.appendTo($('#errorMessage'));
+          $('#errorMessage').html(error);
         },
-        // TODO: add more rules to make the other stuff required
         rules: {
           time: {
             required: true,
             min: {
               param: 15,
               depends: function(element) {
-                console.log($("#logType").val());
                 return $("#logType").val() === "brewersFriend";
               }
             }

@@ -71,8 +71,16 @@ input[type=submit]:hover {
   background-color: #1282A2;
 }
 
+.inputTable {
+  display: table;
+  margin: auto;
+}
+
+.inputTableElement {
+  display: table-cell;
+}
+
 input[type=text], input[type=password], input[type=number], select {
-  width: 50%;
   padding: 12px 20px;
   margin: 18px;
   font-size: 16px;
@@ -82,10 +90,18 @@ input[type=text], input[type=password], input[type=number], select {
   box-sizing: border-box;
 }
 
+input[type=number] {
+  width: 100px;
+}
+
+input[type=text], input[type=password] {
+  width: 50%;
+}
+
 input[type=number].no-spinner::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none; 
-  margin: 0; 
+  margin: 0;
 }
 
 label {
@@ -105,7 +121,6 @@ button {
   padding: 15px 32px;
   text-align: center;
   font-size: 16px;
-  width: 100px;
   border-radius: 4px;
   transition-duration: 0.4s;
 }
