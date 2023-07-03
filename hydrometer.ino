@@ -15,8 +15,8 @@
 #define BLUE_LED 2
 
 // FIXME: move the key to the configuration and into LittleFS
-#define IFTTT_KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
-#define IFTTT_EVENT "append_beer"                 // Webhooks Event Name
+//#define IFTTT_KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
+//#define IFTTT_EVENT "append_beer"                 // Webhooks Event Name
 
 AsyncWebServer server(80);
 boolean restart = false;
@@ -24,8 +24,6 @@ Temperature t;
 Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
-FileSystem fileSys;
-IFTTT poster(IFTTT_KEY, IFTTT_EVENT);
 Mpu6050 mpu;
 bool configMode = false;
 
@@ -83,7 +81,7 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  if (!fileSys.init()) {
+  if (!FileSystem::init()) {
     Serial.println("File System failed to init");
     flashError();
     ESP.restart();
@@ -91,14 +89,13 @@ void setup() {
   String ssid, pass;
   long tStart;
 
-  configMode = fileSys.isConfigMode();
+  configMode = FileSystem::isConfigMode();
 
-  if (fileSys.wifiCredentialsReady(&ssid, &pass)) {
+  if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
       flashError();
       // purging the files to drop down to captive portal mode
-      fileSys.writeSsidToFile("");
-      fileSys.writePassToFile("");
+      FileSystem::clearAll();
       ESP.restart();
     }
     // at this point, we have successfully connected to WiFi
@@ -122,10 +119,20 @@ void setup() {
       blueBlinker.start();
     } else {
       // do the stuff we need to do to log once
-      if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF())) {
-        // we failed to post an update
-        // blink red for 3 seconds to show failure
-        flashError();
+      String key;
+      String event;
+      if (FileSystem::getIftttDetails(&key, &event)) {
+        IFTTT poster(key, event);
+        if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF())) {
+          // we failed to post an update
+          // blink red for 3 seconds to show failure
+          flashError();
+        }
+      } else if (FileSystem::getBrewersFriendKey(&key)) {
+        Serial.println("ERROR: brewers friend not implemented yet!");
+        FileSystem::clearBrewersFriend();
+      } else {
+        FileSystem::setConfigMode(true);
       }
       sleep();
     }
