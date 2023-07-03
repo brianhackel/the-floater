@@ -28,7 +28,10 @@ class FileSystem {
     static bool getIftttDetails(String *key, String *event);
     static bool getBrewersFriendKey(String *key);
     static bool isConfigMode();
-    static int getSleepDurationMs();
+    static int getSleepDurationUs();
+    static void writeBrewersFriendKeyToFile(const char* key) {
+      writeFile(brewersFriendKeyPath, key);
+    };
     static void writeLogTypeToFile(const char* type) {
       writeFile(logTypePath, type);
     };
@@ -38,8 +41,8 @@ class FileSystem {
     static void writeIftttEventToFile(const char* event) {
       writeFile(iftttEventPath, event);
     };
-    static void writeSleepDurationToFile(const int durationMs) {
-      writeFile(sleepDurationPath, String(durationMs).c_str());
+    static void writeSleepDurationToFile(const int durationUs) {
+      writeFile(sleepDurationPath, String(durationUs).c_str());
     };
     static void writeSsidToFile(const char* message) {
       writeFile(ssidPath, message);
@@ -57,6 +60,10 @@ class FileSystem {
     static void clearWifi() {
       LittleFS.remove(ssidPath);
       LittleFS.remove(passPath);
+    };
+    static void clearLoggingConfigs() {
+      clearBrewersFriend();
+      clearIfttt();
     };
     static void clearAll() {
       clearWifi();

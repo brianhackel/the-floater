@@ -65,9 +65,9 @@ bool FileSystem::isConfigMode() {
   return _configMode == "1";
 }
 
-int FileSystem::getSleepDurationMs() {
-  String _sleepMs = readFile(sleepDurationPath);
-  return _sleepMs.toInt();
+int FileSystem::getSleepDurationUs() {
+  String _sleepUs = readFile(sleepDurationPath);
+  return _sleepUs.toInt();
 }
 
 // Read File from LittleFS

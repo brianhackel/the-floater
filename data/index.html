@@ -76,12 +76,15 @@
       $('#logType').on('change', function (e) {
         var valueSelected = this.value;
         $('.loggingForm').hide();
+        $('.loggingForm *').attr('disabled', true);
         switch (valueSelected) {
           case "ifttt":
             $('#logging-ifttt').show();
+            $('#logging-ifttt *').attr('disabled', false);
             break;
           case "brewersFriend":
             $('#logging-brewersFriend').show();
+            $('#logging-brewersFriend *').attr('disabled', false);
             break;
           default:
             console.log("oops, bad value");

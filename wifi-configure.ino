@@ -7,9 +7,6 @@ String hostname = "hydrometer";
 
 // Initialize WiFi
 bool initWiFi(String ssid, String pass) {
-  Serial.println(ssid);
-  Serial.println(pass);
-
   WiFi.mode(WIFI_STA);
   WiFi.hostname(hostname);
   WiFi.begin(ssid.c_str(), pass.c_str());
@@ -53,29 +50,32 @@ void setupStateServer() {
 
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
-    if (request->hasParam("time")) {
-      AsyncWebParameter* p = request->getParam("time");
+    int timeMins = 0;
+    if (request->hasParam("time", true, false)) {
+      AsyncWebParameter* p = request->getParam("time", true, false);
       // convert from minutes to millis
-      FileSystem::writeSleepDurationToFile(p->value().toInt() * 60000);
+      timeMins = p->value().toInt();
+      FileSystem::writeSleepDurationToFile(timeMins * 60000000);
     }
-    if (request->hasParam("logType")) {
-      String type = request->getParam("logType")->value();
-      if (type == "ifttt") {
-        // TODO: write to file
-        Serial.println("found ifttt configuration");
-      } else if (type == "brewersFriend") {
-        // TODO: write to file
+    if (request->hasParam("logType", true, false)) {
+      FileSystem::clearLoggingConfigs();
+      String type = request->getParam("logType", true, false)->value();
+      if (type.equalsIgnoreCase("ifttt")) {
+        FileSystem::writeIftttKeyToFile(request->getParam("iftttKey", true, false)->value().c_str());
+        FileSystem::writeIftttEventToFile(request->getParam("iftttEvent", true, false)->value().c_str());
+      } else if (type.equalsIgnoreCase("brewersFriend")) {
         Serial.println("found brewers friend configuration");
+        FileSystem::writeBrewersFriendKeyToFile(request->getParam("brewersFriendKey", true, false)->value().c_str());
+        // TODO: need to grab the coefficients and save them to a log file in a way we can easily retrieve and calculate gravity
       }
     }
-    for(int i=0;i<params;i++){
-      AsyncWebParameter* p = request->getParam(i);
-      Serial.println(p->name() + ": " + p->value());
-    }
-    // TODO: turn this line back on after testing
-    //FileSystem::setConfigMode(false);
+//    for(int i=0;i<params;i++){
+//      AsyncWebParameter* p = request->getParam(i);
+//      Serial.println(p->name() + ": " + p->value() + "  post:  " + p->isPost() + "   file: " + p->isFile());
+//    }
+    FileSystem::setConfigMode(false);
     restart = true;
-    request->send(200, "text/plain", "Done. HYDROMETER will restart and begin logging.");
+    request->send(200, "text/plain", "Done. HYDROMETER will restart and begin logging at " + String(timeMins) + " minute intervals.");
   });
   
   server.begin();

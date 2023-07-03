@@ -10,13 +10,8 @@
 #include "IFTTT.h"
 #include "Mpu6050.h"
 
-#define DEEPSLEEP_DURATION 60e6  // microseconds
 #define RED_LED 0
 #define BLUE_LED 2
-
-// FIXME: move the key to the configuration and into LittleFS
-//#define IFTTT_KEY "cnyJ7UpiB9U1QAAfP7mQo5"        // Webhooks Key
-//#define IFTTT_EVENT "append_beer"                 // Webhooks Event Name
 
 AsyncWebServer server(80);
 boolean restart = false;
@@ -40,10 +35,12 @@ void flashError() {
 }
 
 void sleep() {
-  Serial.println("going to sleep for " + String(DEEPSLEEP_DURATION / 1000000) + " seconds");
+  int sleepUs = FileSystem::getSleepDurationUs();
+  Serial.println("in sleepDuration.txt : " + String(sleepUs));
+  Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
   delay(500);
-  ESP.deepSleep(DEEPSLEEP_DURATION);
+  ESP.deepSleep(sleepUs);
   delay(200);
 }
 
