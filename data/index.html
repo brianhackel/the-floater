@@ -19,6 +19,14 @@
         });
       });
       $('.loggingForm').hide();
+
+      $("#btnReset").click(function(){
+        if (confirm('Are you sure you want to reset all the settings?')) {
+          $.post( "/reset", function( data ) {
+            $('body').html(data); 
+          });
+        }
+      });
     });
     </script>
   </head>
@@ -63,10 +71,10 @@
                     <label>x + </label>
                     <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="'bfZeroDegreeCoeff">
                   </div>
-                  <!-- Need to put the tilt to gravity calculation here (cooefs of 3rd order polynomial)-->
                 </div>
               </div>
               <div id="errorMessage"></div>
+              <button type="button" id="btnReset">Reset To Factory</button>
               <input type ="submit" value ="Apply And Restart">
           </form>
         </div>

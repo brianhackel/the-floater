@@ -42,7 +42,9 @@ body {
 .card-title { 
   font-size: 1.2rem;
   font-weight: bold;
-  color: #034078
+  color: #034078;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 select {
@@ -53,7 +55,7 @@ select {
   background-color:#ffa0a0;  /* red */
 }
 
-input[type=submit] {
+input[type=submit], button {
   border: none;
   color: #FEFCFB;
   background-color: #034078;
@@ -62,10 +64,20 @@ input[type=submit] {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-  margin: 10px;
+  margin: 5px;
+  margin-bottom: 10px;
   border-radius: 4px;
   transition-duration: 0.4s;
-  }
+}
+
+#btnReset {
+  background-color: lightgray;
+  color: black;
+}
+
+#btnReset:hover {
+  background-color: darkgray;
+}
 
 input[type=submit]:hover {
   background-color: #1282A2;
@@ -81,7 +93,7 @@ input[type=submit]:hover {
 }
 
 input[type=text], input[type=password], input[type=number], select {
-  padding: 12px 20px;
+  padding: 12px 12px;
   margin: 18px;
   font-size: 16px;
   display: inline-block;
@@ -107,32 +119,9 @@ input[type=number]::-webkit-outer-spin-button {
 label {
   font-size: 1.2rem; 
 }
-.value{
-  font-size: 1.2rem;
-  color: #1282A2;  
-}
-.state {
+
+#state {
   font-size: 1.2rem;
   color: #1282A2;
+  margin-bottom: 10px;
 }
-button {
-  border: none;
-  color: #FEFCFB;
-  padding: 15px 32px;
-  text-align: center;
-  font-size: 16px;
-  border-radius: 4px;
-  transition-duration: 0.4s;
-}
-.button-on {
-  background-color: #034078;
-}
-.button-on:hover {
-  background-color: #1282A2;
-}
-.button-off {
-  background-color: #858585;
-}
-.button-off:hover {
-  background-color: #252524;
-} 
