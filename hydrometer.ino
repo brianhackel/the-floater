@@ -9,9 +9,19 @@
 #include "FileSystem.h"
 #include "IFTTT.h"
 #include "Mpu6050.h"
+#include <DoubleResetDetector.h>
 
 #define RED_LED 0
 #define BLUE_LED 2
+
+// Number of seconds after reset during which a 
+// subseqent reset will be considered a double reset.
+#define DRD_TIMEOUT 10
+
+// RTC Memory Address for the DoubleResetDetector to use
+#define DRD_ADDRESS 0
+
+DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 AsyncWebServer server(80);
 boolean restart = false;
@@ -36,46 +46,15 @@ void flashError() {
 
 void sleep() {
   int sleepUs = FileSystem::getSleepDurationUs();
-  Serial.println("in sleepDuration.txt : " + String(sleepUs));
   Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
+  drd.stop();
   delay(500);
   ESP.deepSleep(sleepUs);
   delay(200);
 }
 
 void setup() {
-/*  int reason = ESP.getResetInfoPtr()->reason;
-
-  switch (reason) {
-      case REASON_DEFAULT_RST:
-          // Normal Power up
-          break;
-      case REASON_WDT_RST:
-          break;
-      case REASON_EXCEPTION_RST:
-          break;
-      case REASON_SOFT_WDT_RST:
-          break;
-      case REASON_SOFT_RESTART:
-          break;
-      case REASON_DEEP_SLEEP_AWAKE:
-          break;
-      case REASON_EXT_SYS_RST:
-          break;
-
-      default:
-          break;
-      }
-      REASON_DEFAULT_RST = 0, // normal startup by power on 
-      REASON_WDT_RST = 1, // hardware watch dog reset 
-      REASON_EXCEPTION_RST = 2, // exception reset, GPIO status won’t change 
-      REASON_SOFT_WDT_RST   = 3, // software watch dog reset, GPIO status won’t change 
-      REASON_SOFT_RESTART = 4, // software restart ,system_restart , GPIO status won’t change 
-      REASON_DEEP_SLEEP_AWAKE = 5, // wake up from deep-sleep 
-      REASON_EXT_SYS_RST      = 6 // external system reset 
-      */
-  // Serial port for debugging purposes
   Serial.begin(115200);
 
   if (!FileSystem::init()) {
@@ -88,9 +67,15 @@ void setup() {
 
   configMode = FileSystem::isConfigMode();
 
+  if (drd.detectDoubleReset()) {
+    drd.stop();
+    FileSystem::setConfigMode(true);
+  }
+
   if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
-      flashError();
+      // TODO: maybe figure out WHY this is causing an error:
+      //  flashError();
       // purging the files to drop down to captive portal mode
       FileSystem::clearAll();
       ESP.restart();
@@ -153,5 +138,7 @@ void loop() {
       MDNS.update();
     }
   }
+  // checking for double reset press
+  drd.loop();
 }
 

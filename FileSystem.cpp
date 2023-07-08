@@ -72,8 +72,6 @@ int FileSystem::getSleepDurationUs() {
 
 // Read File from LittleFS
 String FileSystem::readFile(const char* path){
-  Serial.printf("Reading file: %s\r\n", path);
-
   File file = LittleFS.open(path, "r");
   if(!file || file.isDirectory()){
     Serial.println("- failed to open file for reading");
@@ -91,16 +89,12 @@ String FileSystem::readFile(const char* path){
 
 // Write file to LittleFS
 void FileSystem::writeFile(const char* path, const char* message) {
-  Serial.printf("Writing file: %s\r\n", path);
-
   File file = LittleFS.open(path, "w");
   if(!file){
     Serial.println("- failed to open file for writing");
     return;
   }
-  if(file.print(message)){
-    Serial.println("- file written");
-  } else {
+  if(!file.print(message)){
     Serial.println("- frite failed");
   }
   file.close();
