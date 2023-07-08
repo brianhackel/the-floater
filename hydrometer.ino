@@ -74,8 +74,6 @@ void setup() {
 
   if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
-      // TODO: maybe figure out WHY this is causing an error:
-      //  flashError();
       // purging the files to drop down to captive portal mode
       FileSystem::clearAll();
       ESP.restart();
