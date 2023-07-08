@@ -109,11 +109,13 @@ void setupAccessPoint() {
   
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
+    String ssid;
     for(int i=0;i<params;i++){
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
         if (p->name() == "ssid") {
-          FileSystem::writeSsidToFile(p->value().c_str());
+          ssid = p->value();
+          FileSystem::writeSsidToFile(ssid.c_str());
         }
         if (p->name() == "pass") {
           FileSystem::writePassToFile(p->value().c_str());
@@ -122,7 +124,8 @@ void setupAccessPoint() {
     }
     FileSystem::setConfigMode(true);
     restart = true;
-    request->send(200, "text/plain", "Done. HYDROMETER will restart. Please connect to the SSID network and go to http://" + hostname + ".local for configuration");
+    String linkStr = "http://" + hostname + ".local";
+    request->send(200, "text/html", "Done. HYDROMETER will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
   });
   server.begin();
 }

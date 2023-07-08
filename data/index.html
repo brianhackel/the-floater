@@ -23,7 +23,8 @@
       $("#btnReset").click(function(){
         if (confirm('Are you sure you want to reset all the settings?')) {
           $.post( "/reset", function( data ) {
-            $('body').html(data); 
+            $('body').html("<pre style=\"word-wrap: break-word; white-space: pre-wrap;\"></pre>");
+            $('body > pre').html(data);
           });
         }
       });
