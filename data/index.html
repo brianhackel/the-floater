@@ -7,24 +7,114 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
     <script>
     $(document).ready(function(){
       setInterval(function(){
         $('#state').load('/state');
-       }, 2000)
+      }, 2000);
+      $("#configuration input").each(function () {
+        $(this).rules("add", {
+          required: true
+        });
+      });
+      $('.loggingForm').hide();
+
+      $("#btnReset").click(function(){
+        if (confirm('Are you sure you want to reset all the settings?')) {
+          $.post( "/reset", function( data ) {
+            $('body').html(data); 
+          });
+        }
+      });
     });
     </script>
   </head>
   <body>
     <div class="topnav">
-      <h1>HYDORMETER</h1>
+      <h1>HYDROMETER</h1>
     </div>
     <div class="content">
       <div class="card-grid">
         <div class="card">
-          <div id="state" class="state">Loading...</p>
+          <div class="card-title">Current State</div>
+          <div id="state" class="state">Loading...</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Configuration</div>
+          <form id="configuration" action="/" method="POST">
+              <label for="time">Time Between Logs:</label>
+              <input class="no-spinner" type="number" id="time" name="time" value="30">Minutes<br>
+              <label for="logType">Log To:</label>
+              <select name="logType" id="logType">
+                <option value="" disabled selected>Choose One</option>
+                <option value="ifttt">IFTTT</option>
+                <option value="brewersFriend">Brewers Friend</option>
+              </select><br>
+              <div id="loggingInfo">
+                <div class='loggingForm' id="logging-ifttt">
+                  <label for="iftttKey">Webhooks Key:</label>
+                  <input type="password" id="iftttKey" name="iftttKey"><br>
+                  <label for="iftttEvent">Event Name:</label>
+                  <input type="text" id="iftttEvent" name="iftttEvent"><br>
+                </div>
+                <div class='loggingForm' id="logging-brewersFriend">
+                  <label for="brewersFriendKey">API Key:</label>
+                  <input type="password" id="brewersFriendKey" name="brewersFriendKey"><br>
+                  <div class="card-title">Polynomial Coefficients for tilt to gravity fit</div>
+                  <div class="inputTable">
+                    <input class="inputTableCell no-spinner" type="number" id="bfCubedCoeff" name="'bfCubedCoeff">
+                    <label>x<sup>3</sup> + </label>
+                    <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="'bfSquaredCoeff">
+                    <label>x<sup>2</sup> + </label>
+                    <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="'bfFirstDegreeCoeff">
+                    <label>x + </label>
+                    <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="'bfZeroDegreeCoeff">
+                  </div>
+                </div>
+              </div>
+              <div id="errorMessage"></div>
+              <button type="button" id="btnReset">Reset To Factory</button>
+              <input type ="submit" value ="Apply And Restart">
+          </form>
         </div>
       </div>
     </div>
+    <script>
+      $('#logType').on('change', function (e) {
+        var valueSelected = this.value;
+        $('.loggingForm').hide();
+        $('.loggingForm *').attr('disabled', true);
+        switch (valueSelected) {
+          case "ifttt":
+            $('#logging-ifttt').show();
+            $('#logging-ifttt *').attr('disabled', false);
+            break;
+          case "brewersFriend":
+            $('#logging-brewersFriend').show();
+            $('#logging-brewersFriend *').attr('disabled', false);
+            break;
+          default:
+            console.log("oops, bad value");
+        }
+      });
+      $("#configuration").validate({
+        errorClass: "my-error-class",
+        errorPlacement: function(error, element) {
+          $('#errorMessage').html(error);
+        },
+        rules: {
+          time: {
+            required: true,
+            min: {
+              param: 15,
+              depends: function(element) {
+                return $("#logType").val() === "brewersFriend";
+              }
+            }
+          }
+        }
+      });
+    </script>
   </body>
 </html>

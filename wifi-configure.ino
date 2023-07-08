@@ -7,9 +7,6 @@ String hostname = "hydrometer";
 
 // Initialize WiFi
 bool initWiFi(String ssid, String pass) {
-  Serial.println(ssid);
-  Serial.println(pass);
-
   WiFi.mode(WIFI_STA);
   WiFi.hostname(hostname);
   WiFi.begin(ssid.c_str(), pass.c_str());
@@ -28,7 +25,7 @@ bool initWiFi(String ssid, String pass) {
     return false;
   }
 
-  if (CONFIG_MODE) {
+  if (configMode) {
     Serial.println(WiFi.localIP());
     if (!MDNS.begin(hostname)) {
       Serial.println("Error setting up MDNS responder!");
@@ -49,6 +46,41 @@ void setupStateServer() {
 
   server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "application/json", "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}");
+  });
+
+  server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
+    FileSystem::clearAll();
+    request->send(200, "text/plain", "Done. HYDROMETER will restart. You will need to connect to the Hydrometer's WiFi network to reconfigure.");
+  });
+
+  server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
+    int params = request->params();
+    int timeMins = 0;
+    if (request->hasParam("time", true, false)) {
+      AsyncWebParameter* p = request->getParam("time", true, false);
+      // convert from minutes to millis
+      timeMins = p->value().toInt();
+      FileSystem::writeSleepDurationToFile(timeMins * 60000000);
+    }
+    if (request->hasParam("logType", true, false)) {
+      FileSystem::clearLoggingConfigs();
+      String type = request->getParam("logType", true, false)->value();
+      if (type.equalsIgnoreCase("ifttt")) {
+        FileSystem::writeIftttKeyToFile(request->getParam("iftttKey", true, false)->value().c_str());
+        FileSystem::writeIftttEventToFile(request->getParam("iftttEvent", true, false)->value().c_str());
+      } else if (type.equalsIgnoreCase("brewersFriend")) {
+        Serial.println("found brewers friend configuration");
+        FileSystem::writeBrewersFriendKeyToFile(request->getParam("brewersFriendKey", true, false)->value().c_str());
+        // TODO: need to grab the coefficients and save them to a log file in a way we can easily retrieve and calculate gravity
+      }
+    }
+//    for(int i=0;i<params;i++){
+//      AsyncWebParameter* p = request->getParam(i);
+//      Serial.println(p->name() + ": " + p->value() + "  post:  " + p->isPost() + "   file: " + p->isFile());
+//    }
+    FileSystem::setConfigMode(false);
+    restart = true;
+    request->send(200, "text/plain", "Done. HYDROMETER will restart and begin logging at " + String(timeMins) + " minute intervals.");
   });
   
   server.begin();
@@ -80,17 +112,16 @@ void setupAccessPoint() {
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
         if (p->name() == "ssid") {
-          String ssid = p->value().c_str();
-          FileSystem::writeSsidToFile(ssid.c_str());
+          FileSystem::writeSsidToFile(p->value().c_str());
         }
         if (p->name() == "pass") {
-          String pass = p->value().c_str();
-          FileSystem::writePassToFile(pass.c_str());
+          FileSystem::writePassToFile(p->value().c_str());
         }
       }
     }
+    FileSystem::setConfigMode(true);
     restart = true;
-    request->send(200, "text/plain", "Done. HYDORMETER will restart, connect to your router and go to http://" + hostname + ".local");
+    request->send(200, "text/plain", "Done. HYDROMETER will restart. Please connect to the SSID network and go to http://" + hostname + ".local for configuration");
   });
   server.begin();
 }

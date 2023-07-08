@@ -31,7 +31,7 @@ body {
   margin: 0 auto; 
   display: grid; 
   grid-gap: 2rem; 
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(30px, 1fr));
 }
 
 .card { 
@@ -42,10 +42,20 @@ body {
 .card-title { 
   font-size: 1.2rem;
   font-weight: bold;
-  color: #034078
+  color: #034078;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
-input[type=submit] {
+select {
+  font-size: 16px;
+}
+
+.my-error-class {
+  background-color:#ffa0a0;  /* red */
+}
+
+input[type=submit], button {
   border: none;
   color: #FEFCFB;
   background-color: #034078;
@@ -54,56 +64,64 @@ input[type=submit] {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-  width: 100px;
-  margin-right: 10px;
+  margin: 5px;
+  margin-bottom: 10px;
   border-radius: 4px;
   transition-duration: 0.4s;
-  }
+}
+
+#btnReset {
+  background-color: lightgray;
+  color: black;
+}
+
+#btnReset:hover {
+  background-color: darkgray;
+}
 
 input[type=submit]:hover {
   background-color: #1282A2;
 }
 
-input[type=text], input[type=number], select {
-  width: 50%;
-  padding: 12px 20px;
+.inputTable {
+  display: table;
+  margin: auto;
+}
+
+.inputTableElement {
+  display: table-cell;
+}
+
+input[type=text], input[type=password], input[type=number], select {
+  padding: 12px 12px;
   margin: 18px;
+  font-size: 16px;
   display: inline-block;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
 }
 
+input[type=number] {
+  width: 100px;
+}
+
+input[type=text], input[type=password] {
+  width: 50%;
+}
+
+input[type=number].no-spinner::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0;
+}
+
 label {
   font-size: 1.2rem; 
 }
-.value{
-  font-size: 1.2rem;
-  color: #1282A2;  
-}
-.state {
+
+#state {
   font-size: 1.2rem;
   color: #1282A2;
+  margin-bottom: 10px;
 }
-button {
-  border: none;
-  color: #FEFCFB;
-  padding: 15px 32px;
-  text-align: center;
-  font-size: 16px;
-  width: 100px;
-  border-radius: 4px;
-  transition-duration: 0.4s;
-}
-.button-on {
-  background-color: #034078;
-}
-.button-on:hover {
-  background-color: #1282A2;
-}
-.button-off {
-  background-color: #858585;
-}
-.button-off:hover {
-  background-color: #252524;
-} 
