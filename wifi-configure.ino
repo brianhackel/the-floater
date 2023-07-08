@@ -50,6 +50,7 @@ void setupStateServer() {
 
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     FileSystem::clearAll();
+    restart = true;
     request->send(200, "text/plain", "Done. HYDROMETER will restart. You will need to connect to the Hydrometer's WiFi network to reconfigure.");
   });
 
