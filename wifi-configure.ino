@@ -100,7 +100,6 @@ void setupAccessPoint() {
   Serial.println(IP);
 
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
-    Serial.println("scanning...");
     String json = "[";
     int n = WiFi.scanComplete();
     if(n == -2) {
@@ -119,8 +118,6 @@ void setupAccessPoint() {
     }
     json += "]";
     request->send(200, "application/json", json);
-    Serial.println(json);
-    Serial.println("done.");
   });
 
 
