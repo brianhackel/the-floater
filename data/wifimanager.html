@@ -5,22 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="jquery-3.7.0.min.js"></script>
+  <script>
+    function scan() {
+      $("#scan_progress").css("visibility", "visible");
+      setTimeout(function() {
+        $("#scan_progress").css("visibility", "hidden");
+      },2000);
+      $.getJSON( "/scan", function( data ) {
+        $("#ssids").empty();
+        var dupsRemoved = [];
+        $.each(data, function(i, e) {
+          if ($.inArray(e, dupsRemoved) == -1) dupsRemoved.push(e);
+        });
+        $.map(dupsRemoved, function (value) {
+          $("#ssids").append("<option value=\"" + value + "\"></option>");
+        });
+      });
+      setTimeout(scan, 6000);
+    }
+
+    $(document).ready(function(){
+      scan();
+    });
+    </script>
 </head>
 <body>
   <div class="topnav">
-    <h1>HYDORMETER Wi-Fi Manager</h1>
+    <h1>HYDROMETER Wi-Fi Manager</h1>
   </div>
   <div class="content">
     <div class="card-grid">
       <div class="card">
         <form action="/" method="POST">
-          <p>
-            <label for="ssid">SSID</label>
-            <input type="text" id ="ssid" name="ssid"><br>
-            <label for="pass">Password</label>
-            <input type="password" id ="pass" name="pass"><br>
-            <input type ="submit" value ="Submit">
-          </p>
+          <progress id="scan_progress"></progress>
+          <label for="ssid">Network SSID:</label>
+          <input type="text" style="margin:0px" id="ssid" name="ssid" list="ssids">
+          <datalist id="ssids"></datalist><br>
+          <br>
+          <label for="pass">Password:</label>
+          <input type="password" id ="pass" name="pass"><br>
+          <input type ="submit" value ="Submit">
         </form>
       </div>
     </div>
