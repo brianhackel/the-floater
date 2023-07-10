@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="jquery-3.7.0.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      setInterval(function(){
+        // TODO: show some sort of "loading" indicator
+        $.getJSON( "/scan", function( data ) {
+          // TODO: Clear it out
+          // TODO: don't allow duplicates
+          $.map(data, function (value) {
+            $("#ssids").append("<option value=\"" + value + "\"></option>");
+          });
+        });
+      }, 5000);
+    });
+    </script>
 </head>
 <body>
   <div class="topnav">
@@ -16,7 +31,8 @@
         <form action="/" method="POST">
           <p>
             <label for="ssid">SSID</label>
-            <input type="text" id ="ssid" name="ssid"><br>
+            <input type="text" id="ssid" name="ssid" list="ssids">
+            <datalist id="ssids"></datalist><br>
             <label for="pass">Password</label>
             <input type="password" id ="pass" name="pass"><br>
             <input type ="submit" value ="Submit">

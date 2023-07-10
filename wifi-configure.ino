@@ -88,7 +88,6 @@ void setupStateServer() {
 }
 
 void setupAccessPoint() {
-  // Connect to Wi-Fi network with SSID and password
   Serial.println("Setting AP (Access Point)");
   // NULL sets an open Access Point
   WiFi.softAP("HYDROMETER", NULL);
@@ -98,7 +97,32 @@ void setupAccessPoint() {
 
   IPAddress IP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
-  Serial.println(IP); 
+  Serial.println(IP);
+
+  server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
+    Serial.println("scanning...");
+    String json = "[";
+    int n = WiFi.scanComplete();
+    if(n == -2) {
+      WiFi.scanNetworks(true);
+    } else if(n > 0) {
+      for (int i = 0; i < n; ++i){
+        if(i > 0) {
+          json += ",";
+        }
+        json += "\"" + WiFi.SSID(i) + "\"";
+      }
+      WiFi.scanDelete();
+      if(WiFi.scanComplete() == -2){
+        WiFi.scanNetworks(true);
+      }
+    }
+    json += "]";
+    request->send(200, "application/json", json);
+    Serial.println(json);
+    Serial.println("done.");
+  });
+
 
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
