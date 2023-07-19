@@ -10,6 +10,7 @@
 #include "IFTTT.h"
 #include "Mpu6050.h"
 #include <DoubleResetDetector.h>
+#include <DNSServer.h>
 
 #define RED_LED 0
 #define BLUE_LED 2
@@ -24,6 +25,7 @@
 DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 AsyncWebServer server(80);
+DNSServer dnsServer;
 boolean restart = false;
 Temperature t;
 Lights lights(BLUE_LED, RED_LED);
@@ -119,6 +121,7 @@ void setup() {
   } else {
     // the submit POST will set the reset flag to true to signal the loop
     // i think we should turn on a LONG flasher and have the post turn it off
+    FileSystem::setConfigMode(false);
     setupAccessPoint();
     blueBlinker.start();
     redBlinker.start();
@@ -132,8 +135,10 @@ void loop() {
   } else {
     blueBlinker.update();
     redBlinker.update();
-    if (configMode) {
+    if (FileSystem::isConfigMode()) {
       MDNS.update();
+    } else {
+      dnsServer.processNextRequest();
     }
   }
   // checking for double reset press
