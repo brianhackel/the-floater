@@ -47,7 +47,7 @@ void flashError() {
 }
 
 void sleep() {
-  int sleepUs = FileSystem::getSleepDurationUs();
+  unsigned long sleepUs = FileSystem::getSleepDurationUs();
   Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
   drd.stop();
@@ -72,6 +72,14 @@ void setup() {
   if (drd.detectDoubleReset()) {
     drd.stop();
     FileSystem::setConfigMode(true);
+    blueBlinker.stop();
+    redBlinker.stop();
+    lights.turnOffRed();
+    lights.toggleRed();
+    delay(3);
+    lights.turnOffRed();
+    restart = true;
+    return;
   }
 
   if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {

@@ -28,6 +28,24 @@
           });
         }
       });
+
+      $.getJSON( "/logging_info", function( data ) {
+        console.log(data);
+        if (data.hasOwnProperty("time")) {
+          $("#time").val(data["time"]);
+        }
+        if (data.hasOwnProperty("type")) {
+          $("#logType").val(data["type"]).change();
+          if (data.hasOwnProperty("iftttKey")) {
+            $("#iftttKey").val(data["iftttKey"]);
+            $("#iftttEvent").val(data["iftttEvent"]);
+          }
+          if (data.hasOwnProperty("brewersFriendKey")) {
+            $("#brewersFriendKey").val(data["brewersFriendKey"]);
+          }
+        }
+      });
+
     });
     </script>
   </head>
