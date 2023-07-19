@@ -1,8 +1,5 @@
 #define WIFI_CONNECT_TIMEOUT_MILLIS 30000
 
-IPAddress local_ip(192,168,1,1);
-IPAddress gateway(192,168,1,1);
-IPAddress subnet(255,255,255,0);
 String hostname = "hydrometer";
 
 // Initialize WiFi
@@ -89,15 +86,10 @@ void setupStateServer() {
 
 void setupAccessPoint() {
   Serial.println("Setting AP (Access Point)");
-  // NULL sets an open Access Point
-  WiFi.softAP("HYDROMETER", NULL);
+  WiFi.softAP("HYDROMETER");
 
-  Serial.print("Setting soft-AP configuration ... ");
-  Serial.println(WiFi.softAPConfig(local_ip, gateway, subnet) ? "Ready" : "Failed!");
-
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
+  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+  dnsServer.start(53, "*", WiFi.softAPIP());
 
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
     String json = "[";
@@ -118,16 +110,19 @@ void setupAccessPoint() {
     }
     json += "]";
     request->send(200, "application/json", json);
-  });
+  }).setFilter(ON_AP_FILTER);
 
+  server.serveStatic("/", LittleFS, "/");
 
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(LittleFS, "/wifimanager.html", "text/html");
+  }).setFilter(ON_AP_FILTER);
+
+  server.onNotFound([](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/wifimanager.html", "text/html");
   });
-  
-  server.serveStatic("/", LittleFS, "/");
-  
+    
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
     String ssid;
@@ -147,6 +142,7 @@ void setupAccessPoint() {
     restart = true;
     String linkStr = "http://" + hostname + ".local";
     request->send(200, "text/html", "Done. HYDROMETER will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
-  });
+  }).setFilter(ON_AP_FILTER);
+
   server.begin();
 }
