@@ -9,6 +9,8 @@ const char* FileSystem::iftttEventPath = "/iftttEvent.txt";
 const char* FileSystem::brewersFriendKeyPath = "/brewersFriendKey.txt";
 const char* FileSystem::logTypePath = "/logType.txt";
 
+#define DEFAULT_SLEEP_US 30 * 60000000
+
 bool FileSystem::init() {
   return LittleFS.begin();
 }
@@ -65,9 +67,9 @@ bool FileSystem::isConfigMode() {
   return _configMode == "1";
 }
 
-int FileSystem::getSleepDurationUs() {
+unsigned long FileSystem::getSleepDurationUs() {
   String _sleepUs = readFile(sleepDurationPath);
-  return _sleepUs.toInt();
+  return _sleepUs.isEmpty() ? DEFAULT_SLEEP_US : strtoul(_sleepUs.c_str(), NULL, 10);
 }
 
 // Read File from LittleFS

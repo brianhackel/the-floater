@@ -34,6 +34,20 @@ bool initWiFi(String ssid, String pass) {
 }
 
 void setupStateServer() {
+  String json = "{";
+  json += "\"time\": " + String(FileSystem::getSleepDurationUs() / 60000000ul);
+  String key, event;
+  if (FileSystem::getIftttDetails(&key, &event)) {
+    json += ", \"type\": \"ifttt\"";
+    json += ", \"iftttKey\": \"" + key + "\"";
+    json += ", \"iftttEvent\": \"" + event + "\"";
+  } else if(FileSystem::getBrewersFriendKey(&key)) {
+    json += ", \"type\": \"brewersFriend\"";
+    json += ", \"brewersFriendKey\": \"" + key + "\"";
+  }
+  json += "}";
+  const String logging_json = json;
+
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/index.html", "text/html", false);
@@ -43,6 +57,10 @@ void setupStateServer() {
 
   server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "application/json", "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}");
+  });
+
+  server.on("/logging_info", HTTP_GET, [logging_json](AsyncWebServerRequest *request) {
+    request->send(200, "application/json", logging_json);
   });
 
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -56,9 +74,9 @@ void setupStateServer() {
     int timeMins = 0;
     if (request->hasParam("time", true, false)) {
       AsyncWebParameter* p = request->getParam("time", true, false);
-      // convert from minutes to millis
+      // convert from minutes to micros
       timeMins = p->value().toInt();
-      FileSystem::writeSleepDurationToFile(timeMins * 60000000);
+      FileSystem::writeSleepDurationToFile(timeMins * 60000000l);
     }
     if (request->hasParam("logType", true, false)) {
       FileSystem::clearLoggingConfigs();
@@ -90,6 +108,7 @@ void setupAccessPoint() {
 
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(53, "*", WiFi.softAPIP());
+  WiFi.scanNetworks(false);
 
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
     String json = "[";

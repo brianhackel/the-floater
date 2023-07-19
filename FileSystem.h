@@ -28,7 +28,7 @@ class FileSystem {
     static bool getIftttDetails(String *key, String *event);
     static bool getBrewersFriendKey(String *key);
     static bool isConfigMode();
-    static int getSleepDurationUs();
+    static unsigned long getSleepDurationUs();
     static void writeBrewersFriendKeyToFile(const char* key) {
       writeFile(brewersFriendKeyPath, key);
     };
@@ -41,7 +41,7 @@ class FileSystem {
     static void writeIftttEventToFile(const char* event) {
       writeFile(iftttEventPath, event);
     };
-    static void writeSleepDurationToFile(const int durationUs) {
+    static void writeSleepDurationToFile(const unsigned long durationUs) {
       writeFile(sleepDurationPath, String(durationUs).c_str());
     };
     static void writeSsidToFile(const char* message) {
