@@ -11,6 +11,7 @@
 #include "Mpu6050.h"
 #include <DoubleResetDetector.h>
 #include <DNSServer.h>
+#include "Battery.h"
 
 #define RED_LED 0
 #define BLUE_LED 2
@@ -113,7 +114,7 @@ void setup() {
       String event;
       if (FileSystem::getIftttDetails(&key, &event)) {
         IFTTT poster(key, event);
-        if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF())) {
+        if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
           // we failed to post an update
           // blink red for 3 seconds to show failure
           flashError();

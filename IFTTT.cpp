@@ -1,6 +1,6 @@
 #include "IFTTT.h"
 
-bool IFTTT::postOneUpdate(float angle, float temperature) {
+bool IFTTT::postOneUpdate(float angle, float temperature, long battery) {
   WiFiClient client;
   HTTPClient http;
   String url = "http://maker.ifttt.com/trigger/";
@@ -15,6 +15,8 @@ bool IFTTT::postOneUpdate(float angle, float temperature) {
   jsonString += temperature;
   jsonString += "\",\"tilt\":\"";
   jsonString += angle;
+  jsonString += "\",\"battery\":\"";
+  jsonString += battery;
   jsonString += "\"}";
 
   // Send HTTP POST request
