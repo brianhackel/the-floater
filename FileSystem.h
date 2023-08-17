@@ -38,6 +38,7 @@ class FileSystem {
     static void writeSleepDurationToFile(const unsigned long durationUs) { writeFile(sleepDurationPath, String(durationUs).c_str()); }
     static void writeSsidToFile(const char* message) { writeFile(ssidPath, message); }
     static void writePassToFile(const char* message) { writeFile(passPath, message); }
+    static void resetConsecutiveFailures() { writeFile(consecutiveFailuresPath, "0"); }
 
     static void clearIfttt() {
       LittleFS.remove(iftttKeyPath);
@@ -58,7 +59,7 @@ class FileSystem {
 
     static void clearAll() {
       clearWifi();
-      writeFile(consecutiveFailuresPath, "0");
+      resetConsecutiveFailures();
       setConfigMode(true);
       clearBrewersFriend();
       clearIfttt();
