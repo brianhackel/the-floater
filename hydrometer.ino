@@ -15,6 +15,8 @@
 #define RED_LED 0
 #define BLUE_LED 2
 
+#define N_MAX_CONSECUTIVE_FAILURES 5
+
 // Number of seconds after reset during which a 
 // subseqent reset will be considered a double reset.
 #define DRD_TIMEOUT 10
@@ -84,22 +86,28 @@ void setup() {
 
   if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
     if (!initWiFi(ssid, pass)) {
-      // purging the files to drop down to captive portal mode
-      FileSystem::clearAll();
-      ESP.restart();
+      if (FileSystem::getConsecutiveFailures() > N_MAX_CONSECUTIVE_FAILURES) {
+        // purging the files to drop down to captive portal mode
+        FileSystem::clearAll();
+        ESP.restart();
+      } else {
+        FileSystem::incrementConsecutiveFailures();
+        sleep();
+      }
     }
     // at this point, we have successfully connected to WiFi
+    FileSystem::resetConsecutiveFailures();
     blueBlinker.stop();
     lights.turnOffBlue();
     if (!mpu.init()) {
       Serial.println("Could not init accelerometer");
       flashError();
-      ESP.restart();
+      sleep();
     }
     if (!t.begin()) {
       Serial.println("Could not init temperature sensor");
       flashError();
-      ESP.restart();
+      sleep();
     }
     if(configMode) {
       setupStateServer();

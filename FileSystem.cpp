@@ -8,6 +8,7 @@ const char* FileSystem::iftttKeyPath = "/iftttKey.txt";
 const char* FileSystem::iftttEventPath = "/iftttEvent.txt";
 const char* FileSystem::brewersFriendKeyPath = "/brewersFriendKey.txt";
 const char* FileSystem::logTypePath = "/logType.txt";
+const char* FileSystem::consecutiveFailuresPath = "/nFailures.txt";
 
 #define DEFAULT_SLEEP_US 30 * 60000000
 
@@ -70,6 +71,15 @@ bool FileSystem::isConfigMode() {
 unsigned long FileSystem::getSleepDurationUs() {
   String _sleepUs = readFile(sleepDurationPath);
   return _sleepUs.isEmpty() ? DEFAULT_SLEEP_US : strtoul(_sleepUs.c_str(), NULL, 10);
+}
+
+void FileSystem::incrementConsecutiveFailures() {
+  writeFile(consecutiveFailuresPath, String(getConsecutiveFailures() + 1).c_str());
+}
+
+unsigned int FileSystem::getConsecutiveFailures() {
+  String n = readFile(consecutiveFailuresPath);
+  return n.isEmpty() ? 0 : strtoul(n.c_str(), NULL, 10);
 }
 
 // Read File from LittleFS
