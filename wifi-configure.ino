@@ -78,6 +78,10 @@ void setupStateServer() {
       timeMins = p->value().toInt();
       FileSystem::writeSleepDurationToFile(timeMins * 60000000l);
     }
+    if (request->hasParam("failures", true, false)) {
+      AsyncWebParameter* p = request->getParam("time", true, false);
+      FileSystem::writeAllowedFailures(p->value().toInt());
+    }
     if (request->hasParam("logType", true, false)) {
       FileSystem::clearLoggingConfigs();
       String type = request->getParam("logType", true, false)->value();

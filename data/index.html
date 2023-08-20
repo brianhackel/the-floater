@@ -10,6 +10,11 @@
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
     <script>
     $(document).ready(function(){
+      var failureOptions = "";
+      for (var i = 1; i<11; i++ ) {
+          failureOptions += "<option value=" + i + ">" + i + "</option>";
+      }
+      $("#failures").html( failureOptions );
       setInterval(function(){
         $('#state').load('/state');
       }, 2000);
@@ -64,6 +69,9 @@
           <form id="configuration" action="/" method="POST">
               <label for="time">Time Between Logs:</label>
               <input class="no-spinner" type="number" id="time" name="time" value="30">Minutes<br>
+              <label for="failures">Consecutive Failures Allowed:</label>
+              <select id="failures" name="failures" title="The total number of WiFi or logging failures before the device will slip back into Config mode.">
+              </select><br>
               <label for="logType">Log To:</label>
               <select name="logType" id="logType">
                 <option value="" disabled selected>Choose One</option>
