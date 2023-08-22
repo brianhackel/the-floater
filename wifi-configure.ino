@@ -1,4 +1,4 @@
-#define WIFI_CONNECT_TIMEOUT_MILLIS 30000
+#define WIFI_CONNECT_TIMEOUT_MILLIS 60000
 
 String hostname = "hydrometer";
 
