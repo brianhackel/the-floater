@@ -15,6 +15,7 @@
           failureOptions += "<option value=" + i + ">" + i + "</option>";
       }
       $("#failures").html( failureOptions );
+      $("#failures").val("5").change();
       setInterval(function(){
         $('#state').load('/state');
       }, 2000);
