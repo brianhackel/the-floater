@@ -16,6 +16,7 @@ class FileSystem {
     static const char* brewersFriendKeyPath;
     static const char* logTypePath;
     static const char* consecutiveFailuresPath;
+    static const char* allowedFailuresPath;
     static String readFile(const char *path);
     static void writeFile(const char *path, const char *message);
 
@@ -28,6 +29,7 @@ class FileSystem {
     static bool getBrewersFriendKey(String *key);
     static bool isConfigMode();
     static unsigned long getSleepDurationUs();
+    static unsigned int getAllowedFailures();
     static unsigned int getConsecutiveFailures();
     static void incrementConsecutiveFailures();
 
@@ -38,6 +40,7 @@ class FileSystem {
     static void writeSleepDurationToFile(const unsigned long durationUs) { writeFile(sleepDurationPath, String(durationUs).c_str()); }
     static void writeSsidToFile(const char* message) { writeFile(ssidPath, message); }
     static void writePassToFile(const char* message) { writeFile(passPath, message); }
+    static void writeAllowedFailures(const unsigned int n) { writeFile(allowedFailuresPath, String(n).c_str()); }
     static void resetConsecutiveFailures() { writeFile(consecutiveFailuresPath, "0"); }
 
     static void clearIfttt() {

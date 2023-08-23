@@ -1,4 +1,4 @@
-#define WIFI_CONNECT_TIMEOUT_MILLIS 30000
+#define WIFI_CONNECT_TIMEOUT_MILLIS 60000
 
 String hostname = "hydrometer";
 
@@ -80,6 +80,10 @@ void setupStateServer() {
       // convert from minutes to micros
       timeMins = p->value().toInt();
       FileSystem::writeSleepDurationToFile(timeMins * 60000000l);
+    }
+    if (request->hasParam("failures", true, false)) {
+      AsyncWebParameter* p = request->getParam("time", true, false);
+      FileSystem::writeAllowedFailures(p->value().toInt());
     }
     if (request->hasParam("logType", true, false)) {
       FileSystem::clearLoggingConfigs();
