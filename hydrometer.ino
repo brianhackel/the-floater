@@ -28,6 +28,7 @@ DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 AsyncWebServer server(80);
 DNSServer dnsServer;
 boolean restart = false;
+boolean standby = false;
 Temperature t;
 Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
@@ -148,7 +149,11 @@ void setup() {
 }
 
 void loop() {
-  if (restart){
+  if (standby) {
+    delay(1000);
+    ESP.deepSleep(0);
+  }
+  if (restart) {
     delay(1000);
     ESP.restart();
   } else {
