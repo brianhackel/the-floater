@@ -79,6 +79,15 @@ input[type=submit], button {
   background-color: darkgray;
 }
 
+#btnStandby {
+  background-color: pink;
+  color: black;
+}
+
+#btnStandby:hover {
+  background-color: lightcoral;
+}
+
 input[type=submit]:hover {
   background-color: #1282A2;
 }

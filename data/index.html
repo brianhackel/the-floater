@@ -35,6 +35,15 @@
         }
       });
 
+      $("#btnStandby").click(function(){
+        if (confirm('Are you sure you want to put the Hydrometer into standby mode?')) {
+          $.post( "/standby", function( data ) {
+            $('body').html("<pre style=\"word-wrap: break-word; white-space: pre-wrap;\"></pre>");
+            $('body > pre').html(data);
+          });
+        }
+      });
+
       $.getJSON( "/logging_info", function( data ) {
         console.log(data);
         if (data.hasOwnProperty("time")) {
@@ -102,8 +111,11 @@
                 </div>
               </div>
               <div id="errorMessage"></div>
-              <button type="button" id="btnReset">Reset To Factory</button>
-              <input type ="submit" value ="Apply And Restart">
+              <div id="buttons">
+                <button type="button" id="btnReset">Reset To Factory</button>
+                <input type ="submit" value ="Apply And Restart">
+              </div>
+              <button type="button" id="btnStandby">Enter Standby Mode</button>
           </form>
         </div>
       </div>
