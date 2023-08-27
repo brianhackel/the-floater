@@ -69,6 +69,11 @@ void setupStateServer() {
     request->send(200, "text/plain", "Done. HYDROMETER will restart. You will need to connect to the Hydrometer's WiFi network to reconfigure.");
   });
 
+  server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "Done. HYDROMETER is going to standby mode. You will need to press the RESET button on the board or toggle power to wake it up.");
+    standby = true;
+  });
+
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
     int timeMins = 0;
