@@ -84,6 +84,10 @@ void setup() {
   }
 
   if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
+    if (Battery::getPercentage() < 20) {
+      lights.turnOffRed();
+      lights.toggleRed();
+    }
     if (!initWiFi(ssid, pass)) {
       if (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures()) {
         // purging the files to drop down to captive portal mode
@@ -145,7 +149,7 @@ void setup() {
 
 void loop() {
   if (restart){
-    delay(5000);
+    delay(1000);
     ESP.restart();
   } else {
     blueBlinker.update();
