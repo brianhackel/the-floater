@@ -24,22 +24,17 @@
         $('#state').load('/state');
 
         $.getJSON( "/state", function( data ) {
-          if (chartTilt && "tilt" in data) {
-            chartTilt.series[0].points[0].update(data["tilt"]);
+          if (chartTilt && "angle" in data) {
+            chartTilt.series[0].points[0].update(parseFloat(data["angle"]));
+          }
+          if (chartTemperature && "temperature" in data) {
+            chartTemperature.series[0].points[0].update(parseFloat(data["temperature"]));
+          }
+          if (chartBattery && "battery" in data) {
+            chartBattery.series[0].points[0].update(parseInt(data["battery"]));
           }
         });
-
-        
-        // if (chartTemperature) {
-        //     point = chartTilt.series[0].points[0];
-        //     point.update(newVal);
-        // }
-        // if (chartBattery) {
-        //     point = chartTilt.series[0].points[0];
-        //     point.update(newVal);
-        // }
-
-      }, 2000);
+      }, 1000);
       $("#configuration input").each(function () {
         $(this).rules("add", {
           required: true
@@ -66,7 +61,6 @@
       });
 
       $.getJSON( "/logging_info", function( data ) {
-        console.log(data);
         if (data.hasOwnProperty("time")) {
           $("#time").val(data["time"]);
         }
@@ -110,11 +104,6 @@
 
         // the value axis
         yAxis: {
-            stops: [ // FIXME: these are chart dependent: for example, battery should be reversed from this (red, yellow, green)
-                [0.1, '#55BF3B'], // green
-                [0.5, '#DDDF0D'], // yellow
-                [0.9, '#DF5353'] // red
-            ],
             lineWidth: 0,
             tickWidth: 0,
             minorTickInterval: null,
@@ -142,13 +131,18 @@
       };
 
       // The tilt gauge
-      const chartSpeed = Highcharts.chart('chart-tilt', Highcharts.merge(gaugeOptions, {
+      const chartTilt = Highcharts.chart('chart-tilt', Highcharts.merge(gaugeOptions, {
           yAxis: {
               min: 0,
               max: 90,
               title: {
                   text: 'Tilt'
-              }
+              },
+              stops: [
+                [0.1, '#ffff00'], // yellow
+                [0.5, '#ff8c00'], // orange
+                [0.9, '#321414'] // brown
+              ],
           },
 
           series: [{
@@ -156,9 +150,7 @@
               data: [0],
               dataLabels: {
                   format:
-                      '<div style="text-align:center">' +
-                      '<span style="font-size:18px">{y}&deg;</span>' +
-                      '</div>'
+                      '<span style="font-size:18px">{y:.1f}&deg;</span>'
               },
               tooltip: {
                   valueSuffix: ' &deg;'
@@ -167,13 +159,18 @@
       }));
 
       // The Temperature gauge
-      const chartTilt = Highcharts.chart('chart-temperature', Highcharts.merge(gaugeOptions, {
+      const chartTemperature = Highcharts.chart('chart-temperature', Highcharts.merge(gaugeOptions, {
           yAxis: {
               min: 30,
               max: 90,
               title: {
                   text: 'Temperature'
-              }
+              },
+              stops: [
+                [0.1, '#0000ff'], // blue
+                [0.5, '#ffff00'], // yellow
+                [0.9, '#ff0000'] // red
+              ],
           },
 
           series: [{
@@ -181,9 +178,7 @@
               data: [30],
               dataLabels: {
                   format:
-                      '<div style="text-align:center">' +
-                      '<span style="font-size:18px">{y:.1f}&deg;F</span>' +
-                      '</div>'
+                      '<span style="font-size:18px">{y:.1f}&deg;F</span>'
               },
               tooltip: {
                   valueSuffix: ' &deg;F'
@@ -198,7 +193,13 @@
               max: 100,
               title: {
                   text: 'Battery'
-              }
+              },
+              stops: [
+                [0.1, '#ff0000'], // red
+                [0.5, '#0000ff'], // blue
+                [0.9, '#008000'] // green
+              ],
+
           },
 
           series: [{
@@ -206,9 +207,7 @@
               data: [0],
               dataLabels: {
                   format:
-                      '<div style="text-align:center">' +
-                      '<span style="font-size:18px">{y:.1f}%</span>' +
-                      '</div>'
+                      '<span style="font-size:18px">{y}%</span>'
               },
               tooltip: {
                   valueSuffix: ' %'
