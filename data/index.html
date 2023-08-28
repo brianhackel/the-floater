@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+    <script src="https://code.highcharts.com/10/highcharts.js"></script>
+    <script src="https://code.highcharts.com/10/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/10/modules/solid-gauge.js"></script>
     <script>
     $(document).ready(function(){
       var failureOptions = "";
@@ -17,7 +20,25 @@
       $("#failures").html( failureOptions );
       $("#failures").val("5").change();
       setInterval(function(){
+        // FIXME: default the chart container to hidden, and show on the first run of this method
         $('#state').load('/state');
+
+        $.getJSON( "/state", function( data ) {
+          if (chartTilt && "tilt" in data) {
+            chartTilt.series[0].points[0].update(data["tilt"]);
+          }
+        });
+
+        
+        // if (chartTemperature) {
+        //     point = chartTilt.series[0].points[0];
+        //     point.update(newVal);
+        // }
+        // if (chartBattery) {
+        //     point = chartTilt.series[0].points[0];
+        //     point.update(newVal);
+        // }
+
       }, 2000);
       $("#configuration input").each(function () {
         $(this).rules("add", {
@@ -61,6 +82,140 @@
         }
       });
 
+      // ======= HIGHCHARTS SECTION =========
+      const gaugeOptions = {
+        chart: {
+            type: 'solidgauge'
+        },
+
+        title: null,
+
+        pane: {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: {
+                backgroundColor:
+                    Highcharts.defaultOptions.legend.backgroundColor || '#EEE',
+                innerRadius: '60%',
+                outerRadius: '100%',
+                shape: 'arc'
+            }
+        },
+
+        credits: {
+            enabled: false
+        },
+
+        // the value axis
+        yAxis: {
+            stops: [ // FIXME: these are chart dependent: for example, battery should be reversed from this (red, yellow, green)
+                [0.1, '#55BF3B'], // green
+                [0.5, '#DDDF0D'], // yellow
+                [0.9, '#DF5353'] // red
+            ],
+            lineWidth: 0,
+            tickWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 2,
+            title: {
+                y: -50,
+                style: {
+                  fontSize: "1.2em"
+                }
+            },
+            labels: {
+                y: 16
+            }
+        },
+
+        plotOptions: {
+            solidgauge: {
+                dataLabels: {
+                    y: 5,
+                    borderWidth: 0,
+                    useHTML: true
+                }
+            }
+        }
+      };
+
+      // The tilt gauge
+      const chartSpeed = Highcharts.chart('chart-tilt', Highcharts.merge(gaugeOptions, {
+          yAxis: {
+              min: 0,
+              max: 90,
+              title: {
+                  text: 'Tilt'
+              }
+          },
+
+          series: [{
+              name: 'Tilt',
+              data: [0],
+              dataLabels: {
+                  format:
+                      '<div style="text-align:center">' +
+                      '<span style="font-size:18px">{y}&deg;</span>' +
+                      '</div>'
+              },
+              tooltip: {
+                  valueSuffix: ' &deg;'
+              }
+          }]
+      }));
+
+      // The Temperature gauge
+      const chartTilt = Highcharts.chart('chart-temperature', Highcharts.merge(gaugeOptions, {
+          yAxis: {
+              min: 30,
+              max: 90,
+              title: {
+                  text: 'Temperature'
+              }
+          },
+
+          series: [{
+              name: 'Temperature',
+              data: [30],
+              dataLabels: {
+                  format:
+                      '<div style="text-align:center">' +
+                      '<span style="font-size:18px">{y:.1f}&deg;F</span>' +
+                      '</div>'
+              },
+              tooltip: {
+                  valueSuffix: ' &deg;F'
+              }
+          }]
+      }));
+
+      // The Battery gauge
+      const chartBattery = Highcharts.chart('chart-battery', Highcharts.merge(gaugeOptions, {
+          yAxis: {
+              min: 0,
+              max: 100,
+              title: {
+                  text: 'Battery'
+              }
+          },
+
+          series: [{
+              name: 'Battery',
+              data: [0],
+              dataLabels: {
+                  format:
+                      '<div style="text-align:center">' +
+                      '<span style="font-size:18px">{y:.1f}%</span>' +
+                      '</div>'
+              },
+              tooltip: {
+                  valueSuffix: ' %'
+              }
+          }]
+      }));
+
     });
     </script>
   </head>
@@ -73,6 +228,11 @@
         <div class="card">
           <div class="card-title">Current State</div>
           <div id="state" class="state">Loading...</div>
+          <figure class="highcharts-figure">
+            <div id="chart-tilt" class="chart-container"></div>
+            <div id="chart-temperature" class="chart-container"></div>
+            <div id="chart-battery" class="chart-container"></div>
+          </figure>
         </div>
         <div class="card">
           <div class="card-title">Configuration</div>

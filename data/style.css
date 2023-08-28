@@ -13,6 +13,18 @@ p {
   font-size: 1.4rem;
 }
 
+.highcharts-figure {
+  height: 130px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.chart-container {
+  height: 100%;
+  width: 33%;
+  float: left;
+}
+
 .topnav { 
   overflow: hidden; 
   background-color: #0A1128;
