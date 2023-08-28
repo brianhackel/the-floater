@@ -12,5 +12,6 @@ long Battery::getPercentage() {
 
   // convert battery level to percent
   level = map(level, BATTERY_COUNTS_LOW, BATTERY_COUNTS_HIGH, 0, 100);
+  level = min(level, 100);
   return level;
 }
