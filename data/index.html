@@ -13,6 +13,7 @@
     <script src="https://code.highcharts.com/10/modules/solid-gauge.js"></script>
     <script>
     $(document).ready(function(){
+      $('.chart-container').hide();
       var failureOptions = "";
       for (var i = 1; i<11; i++ ) {
           failureOptions += "<option value=" + i + ">" + i + "</option>";
@@ -20,8 +21,8 @@
       $("#failures").html( failureOptions );
       $("#failures").val("5").change();
       setInterval(function(){
-        // FIXME: default the chart container to hidden, and show on the first run of this method
-        $('#state').load('/state');
+        $('#loading').hide();
+        $('.chart-container').show();
 
         $.getJSON( "/state", function( data ) {
           if (chartTilt && "angle" in data) {
@@ -226,8 +227,8 @@
       <div class="card-grid">
         <div class="card">
           <div class="card-title">Current State</div>
-          <div id="state" class="state">Loading...</div>
-          <figure class="highcharts-figure">
+          <figure id="state" class="highcharts-figure">
+            <div id="loading">Loading...</div>
             <div id="chart-tilt" class="chart-container"></div>
             <div id="chart-temperature" class="chart-container"></div>
             <div id="chart-battery" class="chart-container"></div>
