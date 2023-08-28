@@ -11,6 +11,7 @@
 #include "Mpu6050.h"
 #include <DoubleResetDetector.h>
 #include <DNSServer.h>
+#include "Battery.h"
 
 #define RED_LED 0
 #define BLUE_LED 2
@@ -84,6 +85,10 @@ void setup() {
   }
 
   if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
+    if (Battery::getPercentage() < 20) {
+      lights.turnOffRed();
+      lights.toggleRed();
+    }
     if (!initWiFi(ssid, pass)) {
       if (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures()) {
         // purging the files to drop down to captive portal mode
@@ -120,7 +125,7 @@ void setup() {
       String event;
       if (FileSystem::getIftttDetails(&key, &event)) {
         IFTTT poster(key, event);
-        if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF())) {
+        if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
           // we failed to post an update
           // blink red for 3 seconds to show failure
           flashError();
@@ -149,7 +154,7 @@ void loop() {
     ESP.deepSleep(0);
   }
   if (restart) {
-    delay(5000);
+    delay(1000);
     ESP.restart();
   } else {
     blueBlinker.update();

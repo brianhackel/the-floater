@@ -11,6 +11,6 @@ class IFTTT {
 
   public:
    IFTTT(const String key, const String event) : _key(key), _event(event) {};
-   bool postOneUpdate(float angle, float temperature);
+   bool postOneUpdate(float angle, float temperature, long battery);
 };
 #endif
