@@ -110,7 +110,7 @@
             minorTickInterval: null,
             tickAmount: 2,
             title: {
-                y: -50,
+                y: -45,
                 style: {
                   fontSize: "1.2em"
                 }
@@ -123,7 +123,10 @@
         plotOptions: {
             solidgauge: {
                 dataLabels: {
-                    y: 5,
+                    style: {
+                      fontSize: '0.8em'
+                    },
+                    y: -25,
                     borderWidth: 0,
                     useHTML: true
                 }
@@ -151,7 +154,7 @@
               data: [0],
               dataLabels: {
                   format:
-                      '<span style="font-size:18px">{y:.1f}&deg;</span>'
+                      '{y:.1f}&deg;'
               },
               tooltip: {
                   valueSuffix: ' &deg;'
@@ -179,7 +182,7 @@
               data: [30],
               dataLabels: {
                   format:
-                      '<span style="font-size:18px">{y:.1f}&deg;F</span>'
+                      '{y:.1f}&deg;F'
               },
               tooltip: {
                   valueSuffix: ' &deg;F'
@@ -207,8 +210,7 @@
               name: 'Battery',
               data: [0],
               dataLabels: {
-                  format:
-                      '<span style="font-size:18px">{y}%</span>'
+                  format: '{y}%'
               },
               tooltip: {
                   valueSuffix: ' %'
@@ -227,12 +229,12 @@
       <div class="card-grid">
         <div class="card">
           <div class="card-title">Current State</div>
-          <figure id="state" class="highcharts-figure">
+          <div id="state" class="highcharts-figure">
             <div id="loading">Loading...</div>
             <div id="chart-tilt" class="chart-container"></div>
             <div id="chart-temperature" class="chart-container"></div>
             <div id="chart-battery" class="chart-container"></div>
-          </figure>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Configuration</div>
