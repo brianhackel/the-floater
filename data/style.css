@@ -14,15 +14,16 @@ p {
 }
 
 .highcharts-figure {
-  height: 130px;
+  height: 140px;
   margin-left: 2px;
   margin-right: 2px;
 }
 
 .chart-container {
   height: 100%;
-  width: 33%;
   float: left;
+  width: 31%;
+  padding: 1%;
 }
 
 .topnav { 
