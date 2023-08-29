@@ -56,7 +56,10 @@ void setupStateServer() {
   server.serveStatic("/", LittleFS, "/");
 
   server.on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "application/json", "{\"angle\":\"" + String(mpu.measureAngle()) + "\", \"temperature\":\"" + String(t.getTemperatureF()) + "\"}");
+    request->send(200, "application/json", "{\"angle\":\"" + String(mpu.measureAngle())
+                                            + "\", \"temperature\":\"" + String(t.getTemperatureF())
+                                            + "\", \"battery\":\"" + String(Battery::getPercentage())
+                                            + "\"}");
   });
 
   server.on("/logging_info", HTTP_GET, [logging_json](AsyncWebServerRequest *request) {
