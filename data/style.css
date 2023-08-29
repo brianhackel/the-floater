@@ -13,6 +13,19 @@ p {
   font-size: 1.4rem;
 }
 
+.highcharts-figure {
+  height: 140px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.chart-container {
+  height: 100%;
+  float: left;
+  width: 31%;
+  padding: 1%;
+}
+
 .topnav { 
   overflow: hidden; 
   background-color: #0A1128;
@@ -99,16 +112,6 @@ input[type=submit]:hover {
 
 .inputTableElement {
   display: table-cell;
-}
-
-progress {
-  visibility: hidden;
-  margin: 4px;
-}
-
-progress:indeterminate {
-  width: 97%;
-  height: 20px;
 }
 
 input[type=text], input[type=password], input[type=number], select {
