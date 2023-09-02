@@ -90,7 +90,7 @@ void setup() {
       lights.toggleRed();
     }
     if (!initWiFi(ssid, pass)) {
-      if (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures()) {
+      if (configMode || (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures())) {
         // purging the files to drop down to captive portal mode
         FileSystem::clearAll();
         ESP.restart();
