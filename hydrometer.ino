@@ -15,6 +15,7 @@
 
 #define RED_LED 0
 #define BLUE_LED 2
+#define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
 
 // Number of seconds after reset during which a 
 // subseqent reset will be considered a double reset.
@@ -35,6 +36,7 @@ TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 Mpu6050 mpu;
 bool configMode = false;
+long configStartMs;
 
 void flashError() {
   // blink red for 3 seconds to show failure
@@ -119,6 +121,7 @@ void setup() {
       // we want the config mode to blink SLOW
       blueBlinker = TickTwo([](){lights.toggleBlue();}, 1000, 0, MILLIS);
       blueBlinker.start();
+      configStartMs = millis();
     } else {
       // do the stuff we need to do to log once
       String key;
@@ -134,7 +137,7 @@ void setup() {
         Serial.println("ERROR: brewers friend not implemented yet!");
         FileSystem::clearBrewersFriend();
       } else {
-        FileSystem::setConfigMode(true);
+        // nothing configured for logging, that's fine. we just won't log until we're configured properly
       }
       sleep();
     }
@@ -160,6 +163,11 @@ void loop() {
     blueBlinker.update();
     redBlinker.update();
     if (FileSystem::isConfigMode()) {
+      if (millis() - configStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
+        FileSystem::setConfigMode(false);
+        restart = true;
+        return;
+      }
       MDNS.update();
     } else {
       dnsServer.processNextRequest();
