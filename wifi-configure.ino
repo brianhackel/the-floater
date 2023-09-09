@@ -115,8 +115,7 @@ void setupStateServer() {
           c1 = request->getParam("bfFirstDegreeCoeff", true, false)->value().toFloat();
         if (request->hasParam("bfZeroDegreeCoeff", true, false))
           c0 = request->getParam("bfZeroDegreeCoeff", true, false)->value().toFloat();
-
-        // TODO: write c3,c2,c1,c0 to a file in csv form
+        FileSystem::writeCoeffsToFile(c3, c2, c1, c0);
       }
     }
 //    for(int i=0;i<params;i++){

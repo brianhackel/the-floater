@@ -7,11 +7,12 @@
 #include "temperature.h"
 #include "Lights.h"
 #include "FileSystem.h"
-#include "IFTTT.h"
 #include "Mpu6050.h"
 #include <DoubleResetDetector.h>
 #include <DNSServer.h>
 #include "Battery.h"
+#include "BrewersFriend.h"
+#include "IFTTT.h"
 
 #define VERSION "1.0.0"
 
@@ -128,18 +129,18 @@ void setup() {
       // do the stuff we need to do to log once
       String key;
       String event;
+      Poster *poster;
       if (FileSystem::getIftttDetails(&key, &event)) {
-        IFTTT poster(key, event);
-        if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
-          // we failed to post an update
-          // blink red for 3 seconds to show failure
-          flashError();
-        }
+        poster = new IFTTT(key, event);
       } else if (FileSystem::getBrewersFriendKey(&key)) {
-        Serial.println("ERROR: brewers friend not implemented yet!");
-        FileSystem::clearBrewersFriend();
+        poster = new BrewersFriend(key);
       } else {
         // nothing configured for logging, that's fine. we just won't log until we're configured properly
+      }
+      if (poster != NULL && !poster->postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
+        // we failed to post an update
+        // blink red for 3 seconds to show failure
+        flashError();
       }
       sleep();
     }
