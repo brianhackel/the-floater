@@ -33,6 +33,13 @@ bool initWiFi(String ssid, String pass) {
   return true;
 }
 
+String processor( const String& var ){
+  if( var == "version" ){
+      return VERSION;
+  }
+  return "";
+}
+
 void setupStateServer() {
   String json = "{";
   json += "\"time\": " + String(FileSystem::getSleepDurationUs() / 60000000ul);
@@ -48,16 +55,9 @@ void setupStateServer() {
   json += "}";
   const String logging_json = json;
 
-  String processor( const String& var ){
-    if( var == "version" ){
-       return VERSION;
-    }
-    return "";
-  }
-
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", "text/html", fals, processor);
+    request->send(LittleFS, "/index.html", "text/html", false, processor);
   });
   
   server.serveStatic("/", LittleFS, "/");
