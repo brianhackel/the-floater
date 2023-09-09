@@ -48,9 +48,16 @@ void setupStateServer() {
   json += "}";
   const String logging_json = json;
 
+  String processor( const String& var ){
+    if( var == "version" ){
+       return VERSION;
+    }
+    return "";
+  }
+
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", "text/html", false);
+    request->send(LittleFS, "/index.html", "text/html", fals, processor);
   });
   
   server.serveStatic("/", LittleFS, "/");

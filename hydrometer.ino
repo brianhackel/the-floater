@@ -13,6 +13,8 @@
 #include <DNSServer.h>
 #include "Battery.h"
 
+#define VERSION "1.0.0"
+
 #define RED_LED 0
 #define BLUE_LED 2
 #define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
