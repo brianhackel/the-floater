@@ -25,3 +25,4 @@ bool IFTTT::postOneUpdate(float angle, float temperature, long battery) {
   http.end();
   return httpResponseCode == 200;
 }
+

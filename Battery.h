@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #define BATTERY_COUNTS_HIGH 783
-#define BATTERY_COUNTS_LOW 580
+#define BATTERY_COUNTS_LOW 430
 
 class Battery {
   public:

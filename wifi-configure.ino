@@ -33,6 +33,13 @@ bool initWiFi(String ssid, String pass) {
   return true;
 }
 
+String processor( const String& var ){
+  if( var == "version" ){
+      return VERSION;
+  }
+  return "";
+}
+
 void setupStateServer() {
   String json = "{";
   json += "\"time\": " + String(FileSystem::getSleepDurationUs() / 60000000ul);
@@ -48,16 +55,9 @@ void setupStateServer() {
   json += "}";
   const String logging_json = json;
 
-  String processor( const String& var ){
-    if( var == "version" ){
-       return VERSION;
-    }
-    return "";
-  }
-
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", "text/html", fals, processor);
+    request->send(LittleFS, "/index.html", "text/html", false, processor);
   });
   
   server.serveStatic("/", LittleFS, "/");
@@ -106,7 +106,16 @@ void setupStateServer() {
       } else if (type.equalsIgnoreCase("brewersFriend")) {
         Serial.println("found brewers friend configuration");
         FileSystem::writeBrewersFriendKeyToFile(request->getParam("brewersFriendKey", true, false)->value().c_str());
-        // TODO: need to grab the coefficients and save them to a log file in a way we can easily retrieve and calculate gravity
+        int c3 = 0, c2 = 0, c1 = 0, c0 = 0;
+        if (request->hasParam("bfCubedCoeff", true, false))
+          c3 = request->getParam("bfCubedCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfSquaredCoeff", true, false))
+          c2 = request->getParam("bfSquaredCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfFirstDegreeCoeff", true, false))
+          c1 = request->getParam("bfFirstDegreeCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfZeroDegreeCoeff", true, false))
+          c0 = request->getParam("bfZeroDegreeCoeff", true, false)->value().toFloat();
+        FileSystem::writeCoeffsToFile(c3, c2, c1, c0);
       }
     }
 //    for(int i=0;i<params;i++){

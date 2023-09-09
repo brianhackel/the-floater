@@ -10,6 +10,7 @@ const char* FileSystem::brewersFriendKeyPath = "/brewersFriendKey.txt";
 const char* FileSystem::logTypePath = "/logType.txt";
 const char* FileSystem::consecutiveFailuresPath = "/nFailures.txt";
 const char* FileSystem::allowedFailuresPath = "/allowedFailures.txt";
+const char* FileSystem::coefficientsPath = "/coefficients.txt";
 
 #define DEFAULT_SLEEP_US 30 * 60000000
 #define DEFAULT_ALLOWED_FAILURES 5
@@ -64,6 +65,44 @@ bool FileSystem::getBrewersFriendKey(String *key) {
     return true;
   }
 };
+
+bool FileSystem::getCoeffs(float *c3, float *c2, float *c1, float *c0) {
+  String _line = readFile(coefficientsPath);
+  *c3 = 0.0;
+  *c2 = 0.0;
+  *c1 = 0.0;
+  *c0 = 0.0;
+  if (_line == "") {
+    return false;
+  } else {
+    float coeffs[4];
+    char *p, *str;
+    strcpy (str, _line.c_str());
+    p = strtok(str, ",");
+    int count = 0;
+    while (p != NULL) {
+      coeffs[count] = atof(p);
+      count++;
+      p = strtok(NULL, " ");
+    }
+    if (count >= 4) {
+      *c3 = coeffs[0];
+      *c2 = coeffs[1];
+      *c1 = coeffs[2];
+      *c0 = coeffs[3];
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+void FileSystem::writeCoeffsToFile(const float c3, const float c2, const float c1, const float c0) {
+  String line = "";
+  line = line + c3 + "," + c2 + "," + c1 + "," + c0;
+  writeFile(coefficientsPath, line.c_str());
+}
+
 
 bool FileSystem::isConfigMode() {
   String _configMode = readFile(configModePath);
