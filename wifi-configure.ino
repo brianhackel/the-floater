@@ -106,7 +106,17 @@ void setupStateServer() {
       } else if (type.equalsIgnoreCase("brewersFriend")) {
         Serial.println("found brewers friend configuration");
         FileSystem::writeBrewersFriendKeyToFile(request->getParam("brewersFriendKey", true, false)->value().c_str());
-        // TODO: need to grab the coefficients and save them to a log file in a way we can easily retrieve and calculate gravity
+        int c3 = 0, c2 = 0, c1 = 0, c0 = 0;
+        if (request->hasParam("bfCubedCoeff", true, false))
+          c3 = request->getParam("bfCubedCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfSquaredCoeff", true, false))
+          c2 = request->getParam("bfSquaredCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfFirstDegreeCoeff", true, false))
+          c1 = request->getParam("bfFirstDegreeCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfZeroDegreeCoeff", true, false))
+          c0 = request->getParam("bfZeroDegreeCoeff", true, false)->value().toFloat();
+
+        // TODO: write c3,c2,c1,c0 to a file in csv form
       }
     }
 //    for(int i=0;i<params;i++){
