@@ -1,6 +1,6 @@
 #define WIFI_CONNECT_TIMEOUT_MILLIS 60000
 
-String hostname = "hydrometer";
+String hostname = "the-floater";
 
 // Initialize WiFi
 bool initWiFi(String ssid, String pass) {
@@ -69,11 +69,11 @@ void setupStateServer() {
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     FileSystem::clearAll();
     restart = true;
-    request->send(200, "text/plain", "Done. HYDROMETER will restart. You will need to connect to the Hydrometer's WiFi network to reconfigure.");
+    request->send(200, "text/plain", "Done. The-Floater will restart. You will need to connect to The-Floater's WiFi network to reconfigure.");
   });
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Done. HYDROMETER is going to standby mode. You will need to press the RESET button on the board or toggle power to wake it up.");
+    request->send(200, "text/plain", "Done. The-Floater is going to standby mode. You will need to press the RESET button on the board or toggle power to wake it up.");
     standby = true;
   });
 
@@ -108,7 +108,7 @@ void setupStateServer() {
 //    }
     FileSystem::setConfigMode(false);
     restart = true;
-    request->send(200, "text/plain", "Done. HYDROMETER will restart and begin logging at " + String(timeMins) + " minute intervals.");
+    request->send(200, "text/plain", "Done. The-Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
   });
   
   server.begin();
@@ -116,7 +116,7 @@ void setupStateServer() {
 
 void setupAccessPoint() {
   Serial.println("Setting AP (Access Point)");
-  WiFi.softAP("HYDROMETER");
+  WiFi.softAP("The-Floater");
 
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(53, "*", WiFi.softAPIP());
@@ -172,7 +172,7 @@ void setupAccessPoint() {
     FileSystem::setConfigMode(true);
     restart = true;
     String linkStr = "http://" + hostname + ".local";
-    request->send(200, "text/html", "Done. HYDROMETER will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
+    request->send(200, "text/html", "Done. The-Floater will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
   }).setFilter(ON_AP_FILTER);
 
   server.begin();
