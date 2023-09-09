@@ -11,5 +11,5 @@ jobs:
       uses: ArminJo/arduino-test-compile@v3
       with:
         arduino-board-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
-        platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-        required-libraries: Servo,Adafruit NeoPixel
+        platform-url: http://arduino.esp8266.com/stable/package_esp8266com_index.json
+        required-libraries: ESPAsyncWebSrv, ESPAsyncTCP, esp8266_mdns, TickTwo, DoubleResetDetector
