@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>HYDROMETER</title>
+    <title>The-Floater</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="favicon.ico">
@@ -53,7 +53,7 @@
       });
 
       $("#btnStandby").click(function(){
-        if (confirm('Are you sure you want to put the Hydrometer into standby mode?')) {
+        if (confirm('Are you sure you want to put The-Floater into standby mode?')) {
           $.post( "/standby", function( data ) {
             $('body').html("<pre style=\"word-wrap: break-word; white-space: pre-wrap;\"></pre>");
             $('body > pre').html(data);
@@ -87,7 +87,7 @@
 
         pane: {
             center: ['50%', '85%'],
-            size: '140%',
+            size: '120%',
             startAngle: -90,
             endAngle: 90,
             background: {
@@ -223,7 +223,7 @@
   </head>
   <body>
     <div class="topnav">
-      <h1>HYDROMETER</h1>
+      <h1>The-Floater</h1>
     </div>
     <div class="content">
       <div class="card-grid">
@@ -281,6 +281,7 @@
           </form>
         </div>
       </div>
+      <div style="padding-top:30px">%version%</div>
     </div>
     <script>
       $('#logType').on('change', function (e) {
