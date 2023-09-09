@@ -137,7 +137,7 @@ void setup() {
         Serial.println("ERROR: brewers friend not implemented yet!");
         FileSystem::clearBrewersFriend();
       } else {
-        FileSystem::setConfigMode(true);
+        // nothing configured for logging, that's fine. we just won't log until we're configured properly
       }
       sleep();
     }
@@ -164,8 +164,9 @@ void loop() {
     redBlinker.update();
     if (FileSystem::isConfigMode()) {
       if (millis() - configStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
-        // TODO: turn off config mode....?s
+        FileSystem::setConfigMode(false);
         restart = true;
+        return;
       }
       MDNS.update();
     } else {
