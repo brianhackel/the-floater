@@ -21,22 +21,22 @@ p {
 
 .chart-container {
   height: 100%;
-  float: left;
-  width: 31%;
-  padding: 1%;
+  width: 100%;
 }
 
 .topnav { 
   overflow: hidden; 
   background-color: #0A1128;
+  min-width: 800px;
+}
+
+.footer {
+  padding: 20px;
+  min-width: 800px;
 }
 
 body {  
   margin: 0;
-}
-
-.content { 
-  padding: 5%;
 }
 
 .card-grid { 
