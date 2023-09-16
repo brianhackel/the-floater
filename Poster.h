@@ -7,11 +7,13 @@
 
 class Poster {
   protected:
-    const String _key;
+    const String _url;
+    const String _name;
 
   public:
-    Poster(const String key) : _key(key) {};
-    virtual bool postOneUpdate(float angle, float temperature, long battery) = 0;
+    Poster(const String url, const String name) : _url(url), _name(name) {};
+    bool postOneUpdate(float angle, float temperature, long batteryPercentage);
+    virtual String getJson(float angle, float temperature, long batteryPercentage) = 0;
 };
 
 #endif
