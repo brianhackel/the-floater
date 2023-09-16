@@ -30,6 +30,7 @@ TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 Mpu6050 mpu;
 bool configMode = false;
 long configStartMs;
+long activePortalStartMs;
 
 void flashError() {
   // blink red for 3 seconds to show failure
@@ -65,23 +66,25 @@ void setup() {
 
   configMode = FileSystem::isConfigMode();
 
-Serial.println("REASON_DEFAULT_RST        = 0,\n" \
-    "REASON_WDT_RST            = 1,\n" \
-    "REASON_EXCEPTION_RST    = 2,\n" \
-    "REASON_SOFT_WDT_RST       = 3,\n" \
-    "REASON_SOFT_RESTART     = 4,\n" \
-    "REASON_DEEP_SLEEP_AWAKE    = 5,\n" \
-    "REASON_EXT_SYS_RST      = 6\n\n");
+  Serial.println("REASON_DEFAULT_RST        = 0,\n" \
+      "REASON_WDT_RST            = 1,\n" \
+      "REASON_EXCEPTION_RST    = 2,\n" \
+      "REASON_SOFT_WDT_RST       = 3,\n" \
+      "REASON_SOFT_RESTART     = 4,\n" \
+      "REASON_DEEP_SLEEP_AWAKE    = 5,\n" \
+      "REASON_EXT_SYS_RST      = 6\n\n");
 
   rst_info *rinfo;
   rinfo = ESP.getResetInfoPtr();
   Serial.println(String("ResetInfo.reason = ") + rinfo->reason);
 
 
-
   if (rinfo->reason == REASON_EXT_SYS_RST) {
-    // TODO: need to drop into captive portal mode if we're ALREADY in the configuration mode when the user hits 'reset'
-    FileSystem::setConfigMode(true);
+    if (configMode) {
+      FileSystem::clearAll();
+    } else {
+      FileSystem::setConfigMode(true);
+    }
     blueBlinker.stop();
     redBlinker.stop();
     lights.turnOffRed();
@@ -178,6 +181,7 @@ Serial.println("REASON_DEFAULT_RST        = 0,\n" \
     // i think we should turn on a LONG flasher and have the post turn it off
     FileSystem::setConfigMode(false);
     setupAccessPoint();
+    activePortalStartMs = millis();
     blueBlinker.start();
     redBlinker.start();
   }
@@ -202,6 +206,10 @@ void loop() {
       }
       MDNS.update();
     } else {
+      if (millis() - activePortalStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
+        standby = true;
+        return;
+      }
       dnsServer.processNextRequest();
     }
   }
