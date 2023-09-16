@@ -8,7 +8,6 @@
 #include "Lights.h"
 #include "FileSystem.h"
 #include "Mpu6050.h"
-#include <DoubleResetDetector.h>
 #include <DNSServer.h>
 #include "Battery.h"
 #include "BrewersFriend.h"
@@ -19,15 +18,6 @@
 #define RED_LED 0
 #define BLUE_LED 2
 #define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
-
-// Number of seconds after reset during which a 
-// subseqent reset will be considered a double reset.
-#define DRD_TIMEOUT 1
-
-// RTC Memory Address for the DoubleResetDetector to use
-#define DRD_ADDRESS 0
-
-DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 AsyncWebServer server(80);
 DNSServer dnsServer;
@@ -57,7 +47,6 @@ void sleep() {
   unsigned long sleepUs = FileSystem::getSleepDurationUs();
   Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
-  drd.stop();
   delay(500);
   ESP.deepSleep(sleepUs);
   delay(200);
@@ -86,12 +75,12 @@ Serial.println("REASON_DEFAULT_RST        = 0,\n" \
 
   rst_info *rinfo;
   rinfo = ESP.getResetInfoPtr();
-  Serial.println(String("ResetInfo.reason = ") + (*rinfo).reason);
+  Serial.println(String("ResetInfo.reason = ") + rinfo->reason);
 
 
 
-  if (drd.detectDoubleReset()) {
-    drd.stop();
+  if (rinfo->reason == REASON_EXT_SYS_RST) {
+    // TODO: need to drop into captive portal mode if we're ALREADY in the configuration mode when the user hits 'reset'
     FileSystem::setConfigMode(true);
     blueBlinker.stop();
     redBlinker.stop();
@@ -216,7 +205,5 @@ void loop() {
       dnsServer.processNextRequest();
     }
   }
-  // checking for double reset press
-  drd.loop();
 }
 
