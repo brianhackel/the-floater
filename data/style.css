@@ -17,6 +17,16 @@ p {
   height: 140px;
   margin-left: 2px;
   margin-right: 2px;
+  display: grid;
+}
+
+@media (max-width:530px)  {
+  .highcharts-figure {
+    height: 110px;
+  }
+  .highcharts-axis-title {
+    font-size: 1em;
+  }
 }
 
 .chart-container {
@@ -27,12 +37,10 @@ p {
 .topnav { 
   overflow: hidden; 
   background-color: #0A1128;
-  min-width: 800px;
 }
 
 .footer {
   padding: 20px;
-  min-width: 800px;
 }
 
 body {  
@@ -42,7 +50,7 @@ body {
 .card-grid { 
   max-width: 800px; 
   margin: 0 auto; 
-  display: grid; 
+  display: grid;
   grid-gap: 2rem; 
   grid-template-rows: repeat(auto-fit, minmax(30px, 1fr));
 }
