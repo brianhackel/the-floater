@@ -116,32 +116,6 @@ void setup() {
     }
     if(configMode) {
       setupStateServer();
-
-
-      // TODO: remove debug vvvvvvvvvvvvvvvvvv
-      WiFiClient client;
-      HTTPClient http;
-      String url = "http://maker.ifttt.com/trigger/";
-      url += "generic_message";
-      url += "/with/key/";
-      url += "cnyJ7UpiB9U1QAAfP7mQo5";
-      http.begin(client, url);
-      
-      http.addHeader("Content-Type", "application/json");
-      String jsonString = "";
-      jsonString += "{\"value1\":\"";
-      jsonString += "floater is in config mode.";
-      jsonString += "\"}";
-
-      // Send HTTP POST request
-      Serial.println("posting to IFTTT: " + jsonString);
-      int httpResponseCode = http.POST(jsonString);
-      http.end();
-      // ======================================
-
-
-
-
       blueBlinker.stop();
       // we want the config mode to blink SLOW
       blueBlinker = TickTwo([](){lights.toggleBlue();}, 1000, 0, MILLIS);
