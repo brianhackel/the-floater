@@ -17,13 +17,21 @@ p {
   height: 140px;
   margin-left: 2px;
   margin-right: 2px;
+  display: grid;
+}
+
+@media (max-width:530px)  {
+  .highcharts-figure {
+    height: 110px;
+  }
+  .highcharts-axis-title {
+    font-size: 1em;
+  }
 }
 
 .chart-container {
   height: 100%;
-  float: left;
-  width: 31%;
-  padding: 1%;
+  width: 100%;
 }
 
 .topnav { 
@@ -31,18 +39,18 @@ p {
   background-color: #0A1128;
 }
 
-body {  
-  margin: 0;
+.footer {
+  padding: 20px;
 }
 
-.content { 
-  padding: 5%;
+body {  
+  margin: 0;
 }
 
 .card-grid { 
   max-width: 800px; 
   margin: 0 auto; 
-  display: grid; 
+  display: grid;
   grid-gap: 2rem; 
   grid-template-rows: repeat(auto-fit, minmax(30px, 1fr));
 }

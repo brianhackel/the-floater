@@ -1,6 +1,6 @@
 #define WIFI_CONNECT_TIMEOUT_MILLIS 60000
 
-String hostname = "hydrometer";
+String hostname = "the-floater";
 
 // Initialize WiFi
 bool initWiFi(String ssid, String pass) {
@@ -33,6 +33,13 @@ bool initWiFi(String ssid, String pass) {
   return true;
 }
 
+String processor( const String& var ){
+  if( var == "version" ){
+      return VERSION;
+  }
+  return "";
+}
+
 void setupStateServer() {
   String json = "{";
   json += "\"time\": " + String(FileSystem::getSleepDurationUs() / 60000000ul);
@@ -50,7 +57,7 @@ void setupStateServer() {
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", "text/html", false);
+    request->send(LittleFS, "/index.html", "text/html", false, processor);
   });
   
   server.serveStatic("/", LittleFS, "/");
@@ -69,11 +76,11 @@ void setupStateServer() {
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     FileSystem::clearAll();
     restart = true;
-    request->send(200, "text/plain", "Done. HYDROMETER will restart. You will need to connect to the Hydrometer's WiFi network to reconfigure.");
+    request->send(200, "text/plain", "Done. The-Floater will restart. You will need to connect to The-Floater's WiFi network to reconfigure.");
   });
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Done. HYDROMETER is going to standby mode. You will need to press the RESET button on the board or toggle power to wake it up.");
+    request->send(200, "text/plain", "Done. The-Floater is going to standby mode. You will need to press the RESET button on the board or toggle power to wake it up.");
     standby = true;
   });
 
@@ -99,7 +106,16 @@ void setupStateServer() {
       } else if (type.equalsIgnoreCase("brewersFriend")) {
         Serial.println("found brewers friend configuration");
         FileSystem::writeBrewersFriendKeyToFile(request->getParam("brewersFriendKey", true, false)->value().c_str());
-        // TODO: need to grab the coefficients and save them to a log file in a way we can easily retrieve and calculate gravity
+        int c3 = 0, c2 = 0, c1 = 0, c0 = 0;
+        if (request->hasParam("bfCubedCoeff", true, false))
+          c3 = request->getParam("bfCubedCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfSquaredCoeff", true, false))
+          c2 = request->getParam("bfSquaredCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfFirstDegreeCoeff", true, false))
+          c1 = request->getParam("bfFirstDegreeCoeff", true, false)->value().toFloat();
+        if (request->hasParam("bfZeroDegreeCoeff", true, false))
+          c0 = request->getParam("bfZeroDegreeCoeff", true, false)->value().toFloat();
+        FileSystem::writeCoeffsToFile(c3, c2, c1, c0);
       }
     }
 //    for(int i=0;i<params;i++){
@@ -108,7 +124,7 @@ void setupStateServer() {
 //    }
     FileSystem::setConfigMode(false);
     restart = true;
-    request->send(200, "text/plain", "Done. HYDROMETER will restart and begin logging at " + String(timeMins) + " minute intervals.");
+    request->send(200, "text/plain", "Done. The-Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
   });
   
   server.begin();
@@ -116,7 +132,7 @@ void setupStateServer() {
 
 void setupAccessPoint() {
   Serial.println("Setting AP (Access Point)");
-  WiFi.softAP("HYDROMETER");
+  WiFi.softAP("The-Floater");
 
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(53, "*", WiFi.softAPIP());
@@ -172,7 +188,7 @@ void setupAccessPoint() {
     FileSystem::setConfigMode(true);
     restart = true;
     String linkStr = "http://" + hostname + ".local";
-    request->send(200, "text/html", "Done. HYDROMETER will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
+    request->send(200, "text/html", "Done. The-Floater will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
   }).setFilter(ON_AP_FILTER);
 
   server.begin();

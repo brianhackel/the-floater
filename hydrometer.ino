@@ -7,18 +7,22 @@
 #include "temperature.h"
 #include "Lights.h"
 #include "FileSystem.h"
-#include "IFTTT.h"
 #include "Mpu6050.h"
 #include <DoubleResetDetector.h>
 #include <DNSServer.h>
 #include "Battery.h"
+#include "BrewersFriend.h"
+#include "IFTTT.h"
+
+#define VERSION "1.0.0"
 
 #define RED_LED 0
 #define BLUE_LED 2
+#define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
 
 // Number of seconds after reset during which a 
 // subseqent reset will be considered a double reset.
-#define DRD_TIMEOUT 10
+#define DRD_TIMEOUT 1
 
 // RTC Memory Address for the DoubleResetDetector to use
 #define DRD_ADDRESS 0
@@ -35,6 +39,7 @@ TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 Mpu6050 mpu;
 bool configMode = false;
+long configStartMs;
 
 void flashError() {
   // blink red for 3 seconds to show failure
@@ -90,7 +95,7 @@ void setup() {
       lights.toggleRed();
     }
     if (!initWiFi(ssid, pass)) {
-      if (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures()) {
+      if (configMode || (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures())) {
         // purging the files to drop down to captive portal mode
         FileSystem::clearAll();
         ESP.restart();
@@ -119,22 +124,23 @@ void setup() {
       // we want the config mode to blink SLOW
       blueBlinker = TickTwo([](){lights.toggleBlue();}, 1000, 0, MILLIS);
       blueBlinker.start();
+      configStartMs = millis();
     } else {
       // do the stuff we need to do to log once
       String key;
       String event;
+      Poster *poster;
       if (FileSystem::getIftttDetails(&key, &event)) {
-        IFTTT poster(key, event);
-        if (!poster.postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
-          // we failed to post an update
-          // blink red for 3 seconds to show failure
-          flashError();
-        }
+        poster = new IFTTT(key, event);
       } else if (FileSystem::getBrewersFriendKey(&key)) {
-        Serial.println("ERROR: brewers friend not implemented yet!");
-        FileSystem::clearBrewersFriend();
+        poster = new BrewersFriend(key);
       } else {
-        FileSystem::setConfigMode(true);
+        // nothing configured for logging, that's fine. we just won't log until we're configured properly
+      }
+      if (poster != NULL && !poster->postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
+        // we failed to post an update
+        // blink red for 3 seconds to show failure
+        flashError();
       }
       sleep();
     }
@@ -160,6 +166,11 @@ void loop() {
     blueBlinker.update();
     redBlinker.update();
     if (FileSystem::isConfigMode()) {
+      if (millis() - configStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
+        FileSystem::setConfigMode(false);
+        restart = true;
+        return;
+      }
       MDNS.update();
     } else {
       dnsServer.processNextRequest();

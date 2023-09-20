@@ -1,16 +1,15 @@
 #ifndef _IFTTT_H
 #define _IFTTT_H
-#include <Arduino.h>
-#include <ESP8266HTTPClient.h>
-#include <ESP8266WiFi.h>
+#include "Poster.h"
 
-class IFTTT {
+class IFTTT : public Poster {
   private:
-   const String _key;
-   const String _event;
+    const String BASE_URL = "http://maker.ifttt.com/trigger/";
+    const String NAME = "IFTTT";
 
   public:
-   IFTTT(const String key, const String event) : _key(key), _event(event) {};
-   bool postOneUpdate(float angle, float temperature, long battery);
+    IFTTT(const String key, const String eventName) : Poster(BASE_URL + eventName + "/json/with/key/" + key, NAME) {};
+    String getJson(float angle, float temperature, long batteryPercentage) override;
 };
+
 #endif

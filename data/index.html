@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>HYDROMETER</title>
+    <title>The-Floater</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="favicon.ico">
@@ -11,277 +11,66 @@
     <script src="https://code.highcharts.com/10/highcharts.js"></script>
     <script src="https://code.highcharts.com/10/highcharts-more.js"></script>
     <script src="https://code.highcharts.com/10/modules/solid-gauge.js"></script>
-    <script>
-    $(document).ready(function(){
-      $('.chart-container').hide();
-      var failureOptions = "";
-      for (var i = 1; i<11; i++ ) {
-          failureOptions += "<option value=" + i + ">" + i + "</option>";
-      }
-      $("#failures").html( failureOptions );
-      $("#failures").val("5").change();
-      setInterval(function(){
-        $('#loading').hide();
-        $('.chart-container').show();
-
-        $.getJSON( "/state", function( data ) {
-          if (chartTilt && "angle" in data) {
-            chartTilt.series[0].points[0].update(parseFloat(data["angle"]));
-          }
-          if (chartTemperature && "temperature" in data) {
-            chartTemperature.series[0].points[0].update(parseFloat(data["temperature"]));
-          }
-          if (chartBattery && "battery" in data) {
-            chartBattery.series[0].points[0].update(parseInt(data["battery"]));
-          }
-        });
-      }, 1000);
-      $("#configuration input").each(function () {
-        $(this).rules("add", {
-          required: true
-        });
-      });
-      $('.loggingForm').hide();
-
-      $("#btnReset").click(function(){
-        if (confirm('Are you sure you want to reset all the settings?')) {
-          $.post( "/reset", function( data ) {
-            $('body').html("<pre style=\"word-wrap: break-word; white-space: pre-wrap;\"></pre>");
-            $('body > pre').html(data);
-          });
-        }
-      });
-
-      $("#btnStandby").click(function(){
-        if (confirm('Are you sure you want to put the Hydrometer into standby mode?')) {
-          $.post( "/standby", function( data ) {
-            $('body').html("<pre style=\"word-wrap: break-word; white-space: pre-wrap;\"></pre>");
-            $('body > pre').html(data);
-          });
-        }
-      });
-
-      $.getJSON( "/logging_info", function( data ) {
-        if (data.hasOwnProperty("time")) {
-          $("#time").val(data["time"]);
-        }
-        if (data.hasOwnProperty("type")) {
-          $("#logType").val(data["type"]).change();
-          if (data.hasOwnProperty("iftttKey")) {
-            $("#iftttKey").val(data["iftttKey"]);
-            $("#iftttEvent").val(data["iftttEvent"]);
-          }
-          if (data.hasOwnProperty("brewersFriendKey")) {
-            $("#brewersFriendKey").val(data["brewersFriendKey"]);
-          }
-        }
-      });
-
-      // ======= HIGHCHARTS SECTION =========
-      const gaugeOptions = {
-        chart: {
-            type: 'solidgauge'
-        },
-
-        title: null,
-
-        pane: {
-            center: ['50%', '85%'],
-            size: '140%',
-            startAngle: -90,
-            endAngle: 90,
-            background: {
-                backgroundColor:
-                    Highcharts.defaultOptions.legend.backgroundColor || '#EEE',
-                innerRadius: '60%',
-                outerRadius: '100%',
-                shape: 'arc'
-            }
-        },
-
-        credits: {
-            enabled: false
-        },
-
-        // the value axis
-        yAxis: {
-            lineWidth: 0,
-            tickWidth: 0,
-            minorTickInterval: null,
-            tickAmount: 2,
-            title: {
-                y: -45,
-                style: {
-                  fontSize: "1.2em"
-                }
-            },
-            labels: {
-                y: 16
-            }
-        },
-
-        plotOptions: {
-            solidgauge: {
-                dataLabels: {
-                    style: {
-                      fontSize: '0.8em'
-                    },
-                    y: -25,
-                    borderWidth: 0,
-                    useHTML: true
-                }
-            }
-        }
-      };
-
-      // The tilt gauge
-      const chartTilt = Highcharts.chart('chart-tilt', Highcharts.merge(gaugeOptions, {
-          yAxis: {
-              min: 0,
-              max: 90,
-              title: {
-                  text: 'Tilt'
-              },
-              stops: [
-                [0.1, '#ffff00'], // yellow
-                [0.5, '#ff8c00'], // orange
-                [0.9, '#321414'] // brown
-              ],
-          },
-
-          series: [{
-              name: 'Tilt',
-              data: [0],
-              dataLabels: {
-                  format:
-                      '{y:.1f}&deg;'
-              },
-              tooltip: {
-                  valueSuffix: ' &deg;'
-              }
-          }]
-      }));
-
-      // The Temperature gauge
-      const chartTemperature = Highcharts.chart('chart-temperature', Highcharts.merge(gaugeOptions, {
-          yAxis: {
-              min: 30,
-              max: 90,
-              title: {
-                  text: 'Temperature'
-              },
-              stops: [
-                [0.1, '#0000ff'], // blue
-                [0.5, '#ffff00'], // yellow
-                [0.9, '#ff0000'] // red
-              ],
-          },
-
-          series: [{
-              name: 'Temperature',
-              data: [30],
-              dataLabels: {
-                  format:
-                      '{y:.1f}&deg;F'
-              },
-              tooltip: {
-                  valueSuffix: ' &deg;F'
-              }
-          }]
-      }));
-
-      // The Battery gauge
-      const chartBattery = Highcharts.chart('chart-battery', Highcharts.merge(gaugeOptions, {
-          yAxis: {
-              min: 0,
-              max: 100,
-              title: {
-                  text: 'Battery'
-              },
-              stops: [
-                [0.1, '#ff0000'], // red
-                [0.5, '#0000ff'], // blue
-                [0.9, '#008000'] // green
-              ],
-
-          },
-
-          series: [{
-              name: 'Battery',
-              data: [0],
-              dataLabels: {
-                  format: '{y}%'
-              },
-              tooltip: {
-                  valueSuffix: ' %'
-              }
-          }]
-      }));
-
-    });
-    </script>
+    <script src="main.js"></script>
   </head>
   <body>
     <div class="topnav">
-      <h1>HYDROMETER</h1>
+      <h1>The-Floater</h1>
     </div>
-    <div class="content">
-      <div class="card-grid">
-        <div class="card">
-          <div class="card-title">Current State</div>
-          <div id="state" class="highcharts-figure">
-            <div id="loading">Loading...</div>
-            <div id="chart-tilt" class="chart-container"></div>
-            <div id="chart-temperature" class="chart-container"></div>
-            <div id="chart-battery" class="chart-container"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">Configuration</div>
-          <form id="configuration" action="/" method="POST">
-              <label for="time">Time Between Logs:</label>
-              <input class="no-spinner" type="number" id="time" name="time" value="30">Minutes<br>
-              <label for="failures">Consecutive Failures Allowed:</label>
-              <select id="failures" name="failures" title="The total number of WiFi or logging failures before the device will slip back into Config mode.">
-              </select><br>
-              <label for="logType">Log To:</label>
-              <select name="logType" id="logType">
-                <option value="" disabled selected>Choose One</option>
-                <option value="ifttt">IFTTT</option>
-                <option value="brewersFriend">Brewers Friend</option>
-              </select><br>
-              <div id="loggingInfo">
-                <div class='loggingForm' id="logging-ifttt">
-                  <label for="iftttKey">Webhooks Key:</label>
-                  <input type="password" id="iftttKey" name="iftttKey"><br>
-                  <label for="iftttEvent">Event Name:</label>
-                  <input type="text" id="iftttEvent" name="iftttEvent"><br>
-                </div>
-                <div class='loggingForm' id="logging-brewersFriend">
-                  <label for="brewersFriendKey">API Key:</label>
-                  <input type="password" id="brewersFriendKey" name="brewersFriendKey"><br>
-                  <div class="card-title">Polynomial Coefficients for tilt to gravity fit</div>
-                  <div class="inputTable">
-                    <input class="inputTableCell no-spinner" type="number" id="bfCubedCoeff" name="'bfCubedCoeff">
-                    <label>x<sup>3</sup> + </label>
-                    <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="'bfSquaredCoeff">
-                    <label>x<sup>2</sup> + </label>
-                    <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="'bfFirstDegreeCoeff">
-                    <label>x + </label>
-                    <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="'bfZeroDegreeCoeff">
-                  </div>
-                </div>
-              </div>
-              <div id="errorMessage"></div>
-              <div id="buttons">
-                <button type="button" id="btnReset">Reset To Factory</button>
-                <input type ="submit" value ="Apply And Restart">
-              </div>
-              <button type="button" id="btnStandby">Enter Standby Mode</button>
-          </form>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Current State</div>
+        <div id="state" class="highcharts-figure">
+          <div id="loading">Loading...</div>
+          <div id="chart" class="chart-container"></div>
         </div>
       </div>
+      <div class="card">
+        <div class="card-title">Configuration</div>
+        <form id="configuration" action="/" method="POST">
+            <label for="time">Time Between Logs:</label>
+            <input class="no-spinner" type="number" id="time" name="time" value="30">Minutes<br>
+            <label for="failures">Consecutive Failures Allowed:</label>
+            <select id="failures" name="failures" title="The total number of WiFi or logging failures before the device will slip back into Config mode.">
+            </select><br>
+            <label for="logType">Log To:</label>
+            <select name="logType" id="logType">
+              <option value="" disabled selected>Choose One</option>
+              <option value="ifttt">IFTTT</option>
+              <option value="brewersFriend">Brewers Friend</option>
+            </select><br>
+            <div id="loggingInfo">
+              <div class='loggingForm' id="logging-ifttt">
+                <label for="iftttKey">Webhooks Key:</label>
+                <input type="password" id="iftttKey" name="iftttKey"><br>
+                <label for="iftttEvent">Event Name:</label>
+                <input type="text" id="iftttEvent" name="iftttEvent"><br>
+              </div>
+              <div class='loggingForm' id="logging-brewersFriend">
+                <label for="brewersFriendKey">API Key:</label>
+                <input type="password" id="brewersFriendKey" name="brewersFriendKey"><br>
+                <div class="card-title">Polynomial Coefficients for tilt to gravity fit</div>
+                <div class="inputTable">
+                  <input class="inputTableCell no-spinner" type="number" id="bfCubedCoeff" name="'bfCubedCoeff">
+                  <label>x<sup>3</sup> + </label>
+                  <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="'bfSquaredCoeff">
+                  <label>x<sup>2</sup> + </label>
+                  <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="'bfFirstDegreeCoeff">
+                  <label>x + </label>
+                  <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="'bfZeroDegreeCoeff">
+                </div>
+              </div>
+            </div>
+            <div id="errorMessage"></div>
+            <div id="buttons">
+              <button type="button" id="btnReset">Reset To Factory</button>
+              <input type ="submit" value ="Apply And Restart">
+            </div>
+            <button type="button" id="btnStandby">Enter Standby Mode</button>
+        </form>
+      </div>
     </div>
+    <div class="footer">%version%</div>
     <script>
       $('#logType').on('change', function (e) {
         var valueSelected = this.value;
