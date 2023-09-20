@@ -125,7 +125,7 @@ void setup() {
       // do the stuff we need to do to log once
       String key;
       String event;
-      Poster *poster;
+      Poster *poster = NULL;
       if (FileSystem::getIftttDetails(&key, &event)) {
         poster = new IFTTT(key, event);
       } else if (FileSystem::getBrewersFriendKey(&key)) {
