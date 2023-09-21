@@ -105,6 +105,15 @@ input[type=submit], button {
   color: black;
 }
 
+#btnTare {
+  background-color: #fbb51c;
+  color: black;
+}
+
+#btnTare:hover {
+  background-color: #fccd68;
+}
+
 #btnStandby:hover {
   background-color: lightcoral;
 }
