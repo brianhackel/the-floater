@@ -86,6 +86,12 @@ void setupStateServer() {
     standby = true;
   });
 
+  server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
+    mpu.tare();
+    request->send(200);
+    restart = true;
+  });
+
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
     int timeMins = 0;
