@@ -72,6 +72,7 @@ class FileSystem {
       resetConsecutiveFailures();
       setConfigMode(true);
       clearLoggingConfigs();
+      LittleFS.remove(offsetsPath);
     }
 };
 #endif
