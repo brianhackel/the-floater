@@ -217,6 +217,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }]
   }));
 
+  var pause = false;
+
   $(document).ready(function(){
     $('.chart-container').hide();
     var failureOptions = "";
@@ -226,18 +228,19 @@ document.addEventListener('DOMContentLoaded', function () {
     $("#failures").html( failureOptions );
     $("#failures").val("5").change();
     setInterval(function(){
-      $('#loading').hide();
-      $('.chart-container').show();
-
       $.getJSON( "/state", function( data ) {
-        if (chart && "angle" in data) {
-          chart.series[0].points[0].update(parseFloat(data["angle"]));
-        }
-        if (chart && "temperature" in data) {
-          chart.series[1].points[0].update(parseFloat(data["temperature"]));
-        }
-        if (chart && "battery" in data) {
-          chart.series[2].points[0].update(parseInt(data["battery"]));
+        if (!pause) {
+          $('#loading').hide();
+          $('.chart-container').show();
+          if (chart && "angle" in data) {
+            chart.series[0].points[0].update(parseFloat(data["angle"]));
+          }
+          if (chart && "temperature" in data) {
+            chart.series[1].points[0].update(parseFloat(data["temperature"]));
+          }
+          if (chart && "battery" in data) {
+            chart.series[2].points[0].update(parseInt(data["battery"]));
+          }
         }
       });
       chart.reflow();
@@ -264,6 +267,17 @@ document.addEventListener('DOMContentLoaded', function () {
         $.post( "/standby", function( data ) {
           $('body').html("<pre style=\"word-wrap: break-word; white-space: pre-wrap;\"></pre>");
           $('body > pre').html(data);
+        });
+      }
+    });
+
+    $("#btnTare").click(function(){
+      if (confirm('Please set The-Floater on its head so that it is perfectly perpendicular.')) {
+        $.post( "/tare", function(data) {
+          pause = true;
+          $('#loading').show();
+          $('.chart-container').hide();
+          setTimeout(() => pause = false, 3000);
         });
       }
     });
