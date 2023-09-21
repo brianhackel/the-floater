@@ -8,7 +8,6 @@
 #include "Lights.h"
 #include "FileSystem.h"
 #include "Mpu6050.h"
-#include <DoubleResetDetector.h>
 #include <DNSServer.h>
 #include "Battery.h"
 #include "BrewersFriend.h"
@@ -19,15 +18,6 @@
 #define RED_LED 0
 #define BLUE_LED 2
 #define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
-
-// Number of seconds after reset during which a 
-// subseqent reset will be considered a double reset.
-#define DRD_TIMEOUT 1
-
-// RTC Memory Address for the DoubleResetDetector to use
-#define DRD_ADDRESS 0
-
-DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 AsyncWebServer server(80);
 DNSServer dnsServer;
@@ -40,6 +30,7 @@ TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 Mpu6050 mpu;
 bool configMode = false;
 long configStartMs;
+long activePortalStartMs;
 
 void flashError() {
   // blink red for 3 seconds to show failure
@@ -57,7 +48,6 @@ void sleep() {
   unsigned long sleepUs = FileSystem::getSleepDurationUs();
   Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
-  drd.stop();
   delay(500);
   ESP.deepSleep(sleepUs);
   delay(200);
@@ -76,9 +66,24 @@ void setup() {
 
   configMode = FileSystem::isConfigMode();
 
-  if (drd.detectDoubleReset()) {
-    drd.stop();
-    FileSystem::setConfigMode(true);
+  rst_info *rinfo;
+  rinfo = ESP.getResetInfoPtr();
+
+    Serial.println("REASON_DEFAULT_RST        = 0,\n" \
+      "REASON_WDT_RST            = 1,\n" \
+      "REASON_EXCEPTION_RST    = 2,\n" \
+      "REASON_SOFT_WDT_RST       = 3,\n" \
+      "REASON_SOFT_RESTART     = 4,\n" \
+      "REASON_DEEP_SLEEP_AWAKE    = 5,\n" \
+      "REASON_EXT_SYS_RST      = 6\n\n");
+  Serial.println(String("ResetInfo.reason = ") + rinfo->reason);
+
+  if (rinfo->reason == REASON_EXT_SYS_RST) {
+    if (configMode) {
+      FileSystem::clearAll();
+    } else {
+      FileSystem::setConfigMode(true);
+    }
     blueBlinker.stop();
     redBlinker.stop();
     lights.turnOffRed();
@@ -129,7 +134,7 @@ void setup() {
       // do the stuff we need to do to log once
       String key;
       String event;
-      Poster *poster;
+      Poster *poster = NULL;
       if (FileSystem::getIftttDetails(&key, &event)) {
         poster = new IFTTT(key, event);
       } else if (FileSystem::getBrewersFriendKey(&key)) {
@@ -149,6 +154,7 @@ void setup() {
     // i think we should turn on a LONG flasher and have the post turn it off
     FileSystem::setConfigMode(false);
     setupAccessPoint();
+    activePortalStartMs = millis();
     blueBlinker.start();
     redBlinker.start();
   }
@@ -173,10 +179,12 @@ void loop() {
       }
       MDNS.update();
     } else {
+      if (millis() - activePortalStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
+        standby = true;
+        return;
+      }
       dnsServer.processNextRequest();
     }
   }
-  // checking for double reset press
-  drd.loop();
 }
 

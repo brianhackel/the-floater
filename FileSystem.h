@@ -61,14 +61,14 @@ class FileSystem {
     static void clearLoggingConfigs() {
       clearBrewersFriend();
       clearIfttt();
+      LittleFS.remove(sleepDurationPath);
     }
 
     static void clearAll() {
       clearWifi();
       resetConsecutiveFailures();
       setConfigMode(true);
-      clearBrewersFriend();
-      clearIfttt();
+      clearLoggingConfigs();
     }
 };
 #endif

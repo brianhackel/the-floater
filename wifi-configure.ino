@@ -80,7 +80,9 @@ void setupStateServer() {
   });
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Done. The-Floater is going to standby mode. You will need to press the RESET button on the board or toggle power to wake it up.");
+    FileSystem::clearLoggingConfigs();
+    FileSystem::setConfigMode(false);
+    request->send(200, "text/plain", "Done. The-Floater is going to standby mode. To wake: connect to power; press RESET button; wait for blue light; press RESET button again.");
     standby = true;
   });
 

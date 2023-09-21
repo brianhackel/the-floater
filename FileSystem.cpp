@@ -132,7 +132,7 @@ unsigned int FileSystem::getConsecutiveFailures() {
 String FileSystem::readFile(const char* path){
   File file = LittleFS.open(path, "r");
   if(!file || file.isDirectory()){
-    Serial.println("- failed to open file for reading");
+    Serial.println(String(path) + " - failed to open file for reading");
     return String();
   }
 
@@ -149,11 +149,11 @@ String FileSystem::readFile(const char* path){
 void FileSystem::writeFile(const char* path, const char* message) {
   File file = LittleFS.open(path, "w");
   if(!file){
-    Serial.println("- failed to open file for writing");
+    Serial.println(String(path) + " - failed to open file for writing");
     return;
   }
   if(!file.print(message)){
-    Serial.println("- frite failed");
+    Serial.println(String(path) + " - frite failed");
   }
   file.close();
 }
