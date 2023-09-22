@@ -18,6 +18,7 @@ class FileSystem {
     static const char* consecutiveFailuresPath;
     static const char* allowedFailuresPath;
     static const char* coefficientsPath;
+    static const char* offsetsPath;
     static String readFile(const char *path);
     static void writeFile(const char *path, const char *message);
 
@@ -29,6 +30,7 @@ class FileSystem {
     static bool getIftttDetails(String *key, String *event);
     static bool getBrewersFriendKey(String *key);
     static bool getCoeffs(float *c3, float *c2, float *c1, float *c0);
+    static void getOffsets(float *ex, float *zee);
     static bool isConfigMode();
     static unsigned long getSleepDurationUs();
     static unsigned int getAllowedFailures();
@@ -45,6 +47,7 @@ class FileSystem {
     static void writeAllowedFailures(const unsigned int n) { writeFile(allowedFailuresPath, String(n).c_str()); }
     static void resetConsecutiveFailures() { writeFile(consecutiveFailuresPath, "0"); }
     static void writeCoeffsToFile(const float c3, const float c2, const float c1, const float c0);
+    static void writeOffsetsToFile(const float ex, const float zee);
 
     static void clearIfttt() {
       LittleFS.remove(iftttKeyPath);
@@ -61,14 +64,15 @@ class FileSystem {
     static void clearLoggingConfigs() {
       clearBrewersFriend();
       clearIfttt();
+      LittleFS.remove(sleepDurationPath);
     }
 
     static void clearAll() {
       clearWifi();
       resetConsecutiveFailures();
       setConfigMode(true);
-      clearBrewersFriend();
-      clearIfttt();
+      clearLoggingConfigs();
+      LittleFS.remove(offsetsPath);
     }
 };
 #endif
