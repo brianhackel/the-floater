@@ -2,8 +2,6 @@
 
 const char* FileSystem::ssidPath = "/ssid.txt";
 const char* FileSystem::passPath = "/pass.txt";
-const char* FileSystem::configModePath = "/configMode.txt";
-const char* FileSystem::sleepDurationPath = "/sleepDuration.txt";
 const char* FileSystem::iftttKeyPath = "/iftttKey.txt";
 const char* FileSystem::iftttEventPath = "/iftttEvent.txt";
 const char* FileSystem::brewersFriendKeyPath = "/brewersFriendKey.txt";
@@ -13,7 +11,6 @@ const char* FileSystem::allowedFailuresPath = "/allowedFailures.txt";
 const char* FileSystem::coefficientsPath = "/coefficients.txt";
 const char* FileSystem::offsetsPath = "/offsets.txt";
 
-#define DEFAULT_SLEEP_US 30 * 60000000
 #define DEFAULT_ALLOWED_FAILURES 5
 
 bool FileSystem::init() {
@@ -132,16 +129,6 @@ void FileSystem::writeOffsetsToFile(const float ex, const float zee) {
   String line = "";
   line = line + ex + "," + zee;
   writeFile(offsetsPath, line.c_str());
-}
-
-bool FileSystem::isConfigMode() {
-  String _configMode = readFile(configModePath);
-  return _configMode == "1";
-}
-
-unsigned long FileSystem::getSleepDurationUs() {
-  String _sleepUs = readFile(sleepDurationPath);
-  return _sleepUs.isEmpty() ? DEFAULT_SLEEP_US : strtoul(_sleepUs.c_str(), NULL, 10);
 }
 
 unsigned int FileSystem::getAllowedFailures() {

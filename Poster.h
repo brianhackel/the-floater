@@ -11,9 +11,9 @@ class Poster {
     const String _name;
 
   public:
-    Poster(const String url, const String name) : _url(url), _name(name) {};
+    Poster(const String& url, const String& name) : _url(url), _name(name) {};
     bool postOneUpdate(float angle, float temperature, long batteryPercentage);
-    virtual String getJson(float angle, float temperature, long batteryPercentage) = 0;
+    virtual String getJson(float angle, float temperature, long batteryPercentage) const = 0;
 };
 
 #endif

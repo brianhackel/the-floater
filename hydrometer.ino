@@ -12,6 +12,7 @@
 #include "Battery.h"
 #include "BrewersFriend.h"
 #include "IFTTT.h"
+#include "Config.h"
 
 #define VERSION "1.0.0"
 
@@ -28,7 +29,7 @@ Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 Mpu6050 mpu;
-bool configMode = false;
+Config configuration;
 long configStartMs;
 long activePortalStartMs;
 
@@ -45,7 +46,7 @@ void flashError() {
 }
 
 void sleep() {
-  unsigned long sleepUs = FileSystem::getSleepDurationUs();
+  unsigned long sleepUs = configuration.getSleepDurationUs();
   Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
   delay(500);
@@ -64,8 +65,6 @@ void setup() {
   String ssid, pass;
   long tStart;
 
-  configMode = FileSystem::isConfigMode();
-
   rst_info *rinfo;
   rinfo = ESP.getResetInfoPtr();
 
@@ -79,10 +78,10 @@ void setup() {
   Serial.println(String("ResetInfo.reason = ") + rinfo->reason);
 
   if (rinfo->reason == REASON_EXT_SYS_RST) {
-    if (configMode) {
+    if (configuration.isConfigMode()) {
       FileSystem::clearAll();
     } else {
-      FileSystem::setConfigMode(true);
+      configuration.setConfigMode(true);
     }
     blueBlinker.stop();
     redBlinker.stop();
@@ -100,7 +99,7 @@ void setup() {
       lights.toggleRed();
     }
     if (!initWiFi(ssid, pass)) {
-      if (configMode || (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures())) {
+      if (configuration.isConfigMode() || (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures())) {
         // purging the files to drop down to captive portal mode
         FileSystem::clearAll();
         ESP.restart();
@@ -123,7 +122,7 @@ void setup() {
       flashError();
       sleep();
     }
-    if(configMode) {
+    if(configuration.isConfigMode()) {
       setupStateServer();
       blueBlinker.stop();
       // we want the config mode to blink SLOW
@@ -152,7 +151,7 @@ void setup() {
   } else {
     // the submit POST will set the reset flag to true to signal the loop
     // i think we should turn on a LONG flasher and have the post turn it off
-    FileSystem::setConfigMode(false);
+    configuration.setConfigMode(false);
     setupAccessPoint();
     activePortalStartMs = millis();
     blueBlinker.start();
@@ -171,9 +170,9 @@ void loop() {
   } else {
     blueBlinker.update();
     redBlinker.update();
-    if (FileSystem::isConfigMode()) {
+    if (configuration.isConfigMode()) {
       if (millis() - configStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
-        FileSystem::setConfigMode(false);
+        configuration.setConfigMode(false);
         restart = true;
         return;
       }

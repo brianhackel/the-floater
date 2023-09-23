@@ -22,7 +22,7 @@ bool initWiFi(String ssid, String pass) {
     return false;
   }
 
-  if (configMode) {
+  if (configuration.isConfigMode()) {
     Serial.println(WiFi.localIP());
     if (!MDNS.begin(hostname)) {
       Serial.println("Error setting up MDNS responder!");
@@ -42,7 +42,7 @@ String processor( const String& var ){
 
 void setupStateServer() {
   String json = "{";
-  json += "\"time\": " + String(FileSystem::getSleepDurationUs() / 60000000ul);
+  json += "\"time\": " + String(configuration.getSleepDurationUs() / 60000000ul);
   String key, event;
   if (FileSystem::getIftttDetails(&key, &event)) {
     json += ", \"type\": \"ifttt\"";
@@ -81,7 +81,7 @@ void setupStateServer() {
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
     FileSystem::clearLoggingConfigs();
-    FileSystem::setConfigMode(false);
+    configuration.setConfigMode(false);
     request->send(200, "text/plain", "Done. The-Floater is going to standby mode. To wake: connect to power; press RESET button; wait for blue light; press RESET button again.");
     standby = true;
   });
@@ -99,7 +99,7 @@ void setupStateServer() {
       AsyncWebParameter* p = request->getParam("time", true, false);
       // convert from minutes to micros
       timeMins = p->value().toInt();
-      FileSystem::writeSleepDurationToFile(timeMins * 60000000l);
+      configuration.setSleepDuration(timeMins * 60000000l);
     }
     if (request->hasParam("failures", true, false)) {
       AsyncWebParameter* p = request->getParam("time", true, false);
@@ -130,7 +130,7 @@ void setupStateServer() {
 //      AsyncWebParameter* p = request->getParam(i);
 //      Serial.println(p->name() + ": " + p->value() + "  post:  " + p->isPost() + "   file: " + p->isFile());
 //    }
-    FileSystem::setConfigMode(false);
+    configuration.setConfigMode(false);
     restart = true;
     request->send(200, "text/plain", "Done. The-Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
   });
@@ -193,7 +193,7 @@ void setupAccessPoint() {
         }
       }
     }
-    FileSystem::setConfigMode(true);
+    configuration.setConfigMode(true);
     restart = true;
     String linkStr = "http://" + hostname + ".local";
     request->send(200, "text/html", "Done. The-Floater will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");

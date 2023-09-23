@@ -10,7 +10,6 @@ class FileSystem {
     static const char* ssidPath;
     static const char* passPath;
     static const char* configModePath;
-    static const char* sleepDurationPath;
     static const char* iftttKeyPath;
     static const char* iftttEventPath;
     static const char* brewersFriendKeyPath;
@@ -26,13 +25,10 @@ class FileSystem {
     FileSystem() {};
     static bool init();
     static bool wifiCredentialsReady(String *ssid, String *pass);
-    static void setConfigMode(bool configMode) { writeFile(configModePath, configMode ? "1" : "0"); }
     static bool getIftttDetails(String *key, String *event);
     static bool getBrewersFriendKey(String *key);
     static bool getCoeffs(float *c3, float *c2, float *c1, float *c0);
     static void getOffsets(float *ex, float *zee);
-    static bool isConfigMode();
-    static unsigned long getSleepDurationUs();
     static unsigned int getAllowedFailures();
     static unsigned int getConsecutiveFailures();
     static void incrementConsecutiveFailures();
@@ -41,7 +37,6 @@ class FileSystem {
     static void writeLogTypeToFile(const char* type) { writeFile(logTypePath, type); }
     static void writeIftttKeyToFile(const char* key) { writeFile(iftttKeyPath, key); }
     static void writeIftttEventToFile(const char* event) { writeFile(iftttEventPath, event); }
-    static void writeSleepDurationToFile(const unsigned long durationUs) { writeFile(sleepDurationPath, String(durationUs).c_str()); }
     static void writeSsidToFile(const char* message) { writeFile(ssidPath, message); }
     static void writePassToFile(const char* message) { writeFile(passPath, message); }
     static void writeAllowedFailures(const unsigned int n) { writeFile(allowedFailuresPath, String(n).c_str()); }
@@ -64,13 +59,11 @@ class FileSystem {
     static void clearLoggingConfigs() {
       clearBrewersFriend();
       clearIfttt();
-      LittleFS.remove(sleepDurationPath);
     }
 
     static void clearAll() {
       clearWifi();
       resetConsecutiveFailures();
-      setConfigMode(true);
       clearLoggingConfigs();
       LittleFS.remove(offsetsPath);
     }

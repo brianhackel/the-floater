@@ -1,6 +1,9 @@
 #include "BrewersFriend.h"
 
-String BrewersFriend::getJson(float angle, float temperature, long battery) {
+const String BrewersFriend::BASE_URL = "https://log.brewersfriend.com/stream/";
+const String BrewersFriend::NAME = "BrewersFriend";
+
+String BrewersFriend::getJson(float angle, float temperature, long battery) const {
   float c3, c2, c1, c0;
   if (!FileSystem::getCoeffs(&c3, &c2, &c1, &c0))
     return "";
