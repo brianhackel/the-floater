@@ -93,7 +93,7 @@ void setup() {
     return;
   }
 
-  if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
+  if (configuration.areWifiCredentialsReady(&ssid, &pass)) {
     if (Battery::getPercentage() < 20) {
       lights.turnOffRed();
       lights.toggleRed();

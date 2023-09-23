@@ -179,20 +179,14 @@ void setupAccessPoint() {
   });
     
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
-    int params = request->params();
-    String ssid;
-    for(int i=0;i<params;i++){
-      AsyncWebParameter* p = request->getParam(i);
-      if(p->isPost()){
-        if (p->name() == "ssid") {
-          ssid = p->value();
-          FileSystem::writeSsidToFile(ssid.c_str());
-        }
-        if (p->name() == "pass") {
-          FileSystem::writePassToFile(p->value().c_str());
-        }
-      }
+    String ssid = "", pass = "";
+    if (request->hasParam("ssid", true, false)) {
+      ssid = request->getParam("ssid", true, false)->value();
     }
+    if (request->hasParam("pass", true, false)) {
+      ssid = request->getParam("pass", true, false)->value();
+    }
+    configuration.setWifiCredentials(ssid, pass);
     configuration.setConfigMode(true);
     restart = true;
     String linkStr = "http://" + hostname + ".local";

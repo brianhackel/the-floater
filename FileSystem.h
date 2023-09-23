@@ -7,8 +7,6 @@
 class FileSystem {
   private:
     // File paths to save input values permanently
-    static const char* ssidPath;
-    static const char* passPath;
     static const char* configModePath;
     static const char* iftttKeyPath;
     static const char* iftttEventPath;
@@ -24,7 +22,6 @@ class FileSystem {
   public:
     FileSystem() {};
     static bool init();
-    static bool wifiCredentialsReady(String *ssid, String *pass);
     static bool getIftttDetails(String *key, String *event);
     static bool getBrewersFriendKey(String *key);
     static bool getCoeffs(float *c3, float *c2, float *c1, float *c0);
@@ -37,8 +34,6 @@ class FileSystem {
     static void writeLogTypeToFile(const char* type) { writeFile(logTypePath, type); }
     static void writeIftttKeyToFile(const char* key) { writeFile(iftttKeyPath, key); }
     static void writeIftttEventToFile(const char* event) { writeFile(iftttEventPath, event); }
-    static void writeSsidToFile(const char* message) { writeFile(ssidPath, message); }
-    static void writePassToFile(const char* message) { writeFile(passPath, message); }
     static void writeAllowedFailures(const unsigned int n) { writeFile(allowedFailuresPath, String(n).c_str()); }
     static void resetConsecutiveFailures() { writeFile(consecutiveFailuresPath, "0"); }
     static void writeCoeffsToFile(const float c3, const float c2, const float c1, const float c0);
@@ -51,18 +46,12 @@ class FileSystem {
 
     static void clearBrewersFriend() { LittleFS.remove(brewersFriendKeyPath); }
 
-    static void clearWifi() {
-      LittleFS.remove(ssidPath);
-      LittleFS.remove(passPath);
-    }
-
     static void clearLoggingConfigs() {
       clearBrewersFriend();
       clearIfttt();
     }
 
     static void clearAll() {
-      clearWifi();
       resetConsecutiveFailures();
       clearLoggingConfigs();
       LittleFS.remove(offsetsPath);

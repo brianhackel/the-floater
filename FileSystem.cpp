@@ -1,7 +1,5 @@
 #include "FileSystem.h"
 
-const char* FileSystem::ssidPath = "/ssid.txt";
-const char* FileSystem::passPath = "/pass.txt";
 const char* FileSystem::iftttKeyPath = "/iftttKey.txt";
 const char* FileSystem::iftttEventPath = "/iftttEvent.txt";
 const char* FileSystem::brewersFriendKeyPath = "/brewersFriendKey.txt";
@@ -15,26 +13,6 @@ const char* FileSystem::offsetsPath = "/offsets.txt";
 
 bool FileSystem::init() {
   return LittleFS.begin();
-}
-
-bool FileSystem::wifiCredentialsReady(String *ssid, String *pass) {
-  // Load values saved in LittleFS
-  String _ssid = readFile(ssidPath);
-  String _pass = readFile(passPath);
-
-  Serial.println(_ssid);
-  Serial.println(_pass);
-
-  if(_ssid==""){
-    Serial.println("Undefined SSID.");
-    *ssid = "";
-    *pass = "";
-    return false;
-  } else {
-    *ssid = _ssid;
-    *pass = _pass;
-    return true;
-  }
 }
 
 bool FileSystem::getIftttDetails(String *key, String *event) {
