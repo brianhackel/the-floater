@@ -47,11 +47,17 @@ void flashError() {
 
 void sleep() {
   unsigned long sleepUs = configuration.getSleepDurationUs();
+  configuration.save();
   Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
   delay(500);
   ESP.deepSleep(sleepUs);
   delay(200);
+}
+
+void doRestart() {
+  configuration.save();
+  ESP.restart();
 }
 
 void setup() {
@@ -60,7 +66,7 @@ void setup() {
   if (!FileSystem::init()) {
     Serial.println("File System failed to init");
     flashError();
-    ESP.restart();
+    doRestart();
   }
   String ssid, pass;
   long tStart;
@@ -102,7 +108,7 @@ void setup() {
       if (configuration.isConfigMode() || (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures())) {
         // purging the files to drop down to captive portal mode
         FileSystem::clearAll();
-        ESP.restart();
+        doRestart();
       } else {
         FileSystem::incrementConsecutiveFailures();
         sleep();
@@ -162,11 +168,12 @@ void setup() {
 void loop() {
   if (standby) {
     delay(1000);
+    configuration.save();
     ESP.deepSleep(0);
   }
   if (restart) {
     delay(1000);
-    ESP.restart();
+    doRestart();
   } else {
     blueBlinker.update();
     redBlinker.update();

@@ -21,12 +21,9 @@ class Config {
     Conf _conf;
     void load();
 
-  protected:
-    void save();
-
   public:
     Config();
-    ~Config() {save();};
+    void save();
     bool isConfigMode();
     void setConfigMode(bool configMode);
     long getSleepDurationUs();
