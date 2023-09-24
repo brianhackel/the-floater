@@ -41,6 +41,13 @@ void Config::setWifiCredentials(const String& ssid, const String& pass) {
   snprintf(_conf.pass, WIFI_CRED_MAX_LEN, pass.c_str());
 }
 
+void Config::print() {
+  Serial.println("configMode: " + String(_conf.configMode));
+  Serial.println("sleepDurationUs: " + String(_conf.sleepDurationUs));
+  Serial.println("ssid: " + String(_conf.ssid));
+  Serial.println("pass: " + String(_conf.pass));
+}
+
 void Config::load() {
   File file = LittleFS.open(filename, "r");
 

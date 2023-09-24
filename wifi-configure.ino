@@ -184,7 +184,7 @@ void setupAccessPoint() {
       ssid = request->getParam("ssid", true, false)->value();
     }
     if (request->hasParam("pass", true, false)) {
-      ssid = request->getParam("pass", true, false)->value();
+      pass = request->getParam("pass", true, false)->value();
     }
     configuration.setWifiCredentials(ssid, pass);
     configuration.setConfigMode(true);

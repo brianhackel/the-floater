@@ -24,11 +24,13 @@ class Config {
   public:
     Config();
     void save();
+    void print();
     bool isConfigMode();
     void setConfigMode(bool configMode);
     long getSleepDurationUs();
     void setSleepDuration(long durationUs);
     bool areWifiCredentialsReady(String *ssid, String *pass);
     void setWifiCredentials(const String& ssid, const String& pass);
+    void clearWifiCredentials() {setWifiCredentials("", "");};
 };
 #endif

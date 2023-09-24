@@ -63,6 +63,8 @@ void doRestart() {
 void setup() {
   Serial.begin(115200);
 
+  configuration.print();
+
   if (!FileSystem::init()) {
     Serial.println("File System failed to init");
     flashError();
@@ -86,6 +88,7 @@ void setup() {
   if (rinfo->reason == REASON_EXT_SYS_RST) {
     if (configuration.isConfigMode()) {
       FileSystem::clearAll();
+      configuration.clearWifiCredentials();
     } else {
       configuration.setConfigMode(true);
     }
