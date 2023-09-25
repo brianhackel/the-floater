@@ -15,6 +15,8 @@ class Config {
       long sleepDurationUs;
       char ssid[WIFI_CRED_MAX_LEN];
       char pass[WIFI_CRED_MAX_LEN];
+      float offset_x;
+      float offset_z;
     };
 
     static const char* filename;
@@ -32,5 +34,7 @@ class Config {
     bool areWifiCredentialsReady(String *ssid, String *pass);
     void setWifiCredentials(const String& ssid, const String& pass);
     void clearWifiCredentials() {setWifiCredentials("", "");};
+    void getOffsets(float *x, float *z);
+    void setOffsets(float x, float z);
 };
 #endif

@@ -56,6 +56,8 @@ void sleep() {
 }
 
 void doRestart() {
+  server.end();
+  delay(1000);
   configuration.save();
   ESP.restart();
 }
@@ -121,7 +123,9 @@ void setup() {
     FileSystem::resetConsecutiveFailures();
     blueBlinker.stop();
     lights.turnOffBlue();
-    if (!mpu.init()) {
+    float offsetX, offsetZ;
+    configuration.getOffsets(&offsetX, &offsetZ);
+    if (!mpu.init(offsetX, offsetZ)) {
       Serial.println("Could not init accelerometer");
       flashError();
       sleep();
@@ -171,11 +175,11 @@ void setup() {
 void loop() {
   if (standby) {
     delay(1000);
+    server.end();
     configuration.save();
     ESP.deepSleep(0);
   }
   if (restart) {
-    delay(1000);
     doRestart();
   } else {
     blueBlinker.update();

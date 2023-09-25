@@ -7,7 +7,6 @@ const char* FileSystem::logTypePath = "/logType.txt";
 const char* FileSystem::consecutiveFailuresPath = "/nFailures.txt";
 const char* FileSystem::allowedFailuresPath = "/allowedFailures.txt";
 const char* FileSystem::coefficientsPath = "/coefficients.txt";
-const char* FileSystem::offsetsPath = "/offsets.txt";
 
 #define DEFAULT_ALLOWED_FAILURES 5
 
@@ -73,40 +72,10 @@ bool FileSystem::getCoeffs(float *c3, float *c2, float *c1, float *c0) {
   }
 }
 
-void FileSystem::getOffsets(float *ex, float *zee) {
-  String _line = readFile(offsetsPath);
-  *ex = 0.0;
-  *zee = 0.0;
-  if (_line == "") {
-    return;
-  } else {
-    float offsets[2];
-    char *p, str[128];
-    strncpy (str, _line.c_str(), 128);
-    p = strtok(str, ",");
-    int count = 0;
-    while (p != NULL) {
-      offsets[count] = atof(p);
-      count++;
-      p = strtok(NULL, ",");
-    }
-    if (count >= 2) {
-      *ex = offsets[0];
-      *zee = offsets[1];
-    }
-  }
-}
-
 void FileSystem::writeCoeffsToFile(const float c3, const float c2, const float c1, const float c0) {
   String line = "";
   line = line + c3 + "," + c2 + "," + c1 + "," + c0;
   writeFile(coefficientsPath, line.c_str());
-}
-
-void FileSystem::writeOffsetsToFile(const float ex, const float zee) {
-  String line = "";
-  line = line + ex + "," + zee;
-  writeFile(offsetsPath, line.c_str());
 }
 
 unsigned int FileSystem::getAllowedFailures() {

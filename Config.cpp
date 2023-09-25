@@ -41,11 +41,23 @@ void Config::setWifiCredentials(const String& ssid, const String& pass) {
   snprintf(_conf.pass, WIFI_CRED_MAX_LEN, pass.c_str());
 }
 
+void Config::getOffsets(float *x, float *z) {
+  *x = _conf.offset_x;
+  *z = _conf.offset_z;
+}
+
+void Config::setOffsets(float x, float z) {
+  _conf.offset_x = x;
+  _conf.offset_z = z;
+}
+
 void Config::print() {
   Serial.println("configMode: " + String(_conf.configMode));
   Serial.println("sleepDurationUs: " + String(_conf.sleepDurationUs));
   Serial.println("ssid: " + String(_conf.ssid));
   Serial.println("pass: " + String(_conf.pass));
+  Serial.println("offset_x: " + String(_conf.offset_x));
+  Serial.println("offset_z: " + String(_conf.offset_z));
 }
 
 void Config::load() {
@@ -69,6 +81,8 @@ void Config::load() {
   strlcpy(_conf.pass,
           doc["pass"] | "",
           sizeof(_conf.pass));
+  _conf.offset_x = doc["offset_x"] | 0.0;
+  _conf.offset_z = doc["offset_z"] | 0.0;
 
   // Close the file (Curiously, File's destructor doesn't close the file)
   file.close();
@@ -93,6 +107,8 @@ void Config::save() {
   doc["sleepDurationUs"] = _conf.sleepDurationUs;
   doc["ssid"] = _conf.ssid;
   doc["pass"] = _conf.pass;
+  doc["offset_x"] = _conf.offset_x;
+  doc["offset_z"] = _conf.offset_z;
 
   // Serialize JSON to file
   if (serializeJson(doc, file) == 0) {

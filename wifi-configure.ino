@@ -87,7 +87,9 @@ void setupStateServer() {
   });
 
   server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
-    mpu.tare();
+    float offsetX, offsetZ;
+    mpu.tare(&offsetX, &offsetZ);
+    configuration.setOffsets(offsetX, offsetZ);
     request->send(200);
     restart = true;
   });
@@ -131,8 +133,8 @@ void setupStateServer() {
 //      Serial.println(p->name() + ": " + p->value() + "  post:  " + p->isPost() + "   file: " + p->isFile());
 //    }
     configuration.setConfigMode(false);
-    restart = true;
     request->send(200, "text/plain", "Done. The-Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
+    restart = true;
   });
   
   server.begin();

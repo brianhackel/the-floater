@@ -7,7 +7,6 @@
 class FileSystem {
   private:
     // File paths to save input values permanently
-    static const char* configModePath;
     static const char* iftttKeyPath;
     static const char* iftttEventPath;
     static const char* brewersFriendKeyPath;
@@ -25,7 +24,6 @@ class FileSystem {
     static bool getIftttDetails(String *key, String *event);
     static bool getBrewersFriendKey(String *key);
     static bool getCoeffs(float *c3, float *c2, float *c1, float *c0);
-    static void getOffsets(float *ex, float *zee);
     static unsigned int getAllowedFailures();
     static unsigned int getConsecutiveFailures();
     static void incrementConsecutiveFailures();
@@ -37,7 +35,6 @@ class FileSystem {
     static void writeAllowedFailures(const unsigned int n) { writeFile(allowedFailuresPath, String(n).c_str()); }
     static void resetConsecutiveFailures() { writeFile(consecutiveFailuresPath, "0"); }
     static void writeCoeffsToFile(const float c3, const float c2, const float c1, const float c0);
-    static void writeOffsetsToFile(const float ex, const float zee);
 
     static void clearIfttt() {
       LittleFS.remove(iftttKeyPath);
@@ -54,7 +51,6 @@ class FileSystem {
     static void clearAll() {
       resetConsecutiveFailures();
       clearLoggingConfigs();
-      LittleFS.remove(offsetsPath);
     }
 };
 #endif
