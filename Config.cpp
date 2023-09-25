@@ -7,6 +7,19 @@ Config::Config() {
   load();
 }
 
+LogType operator|(LogType lhs, LogType rhs) {
+    return static_cast<LogType>(static_cast<int>(lhs) | static_cast<int>(rhs));
+};
+
+bool convertToJson(const LogType& src, JsonVariant dst) {
+  return dst.set((int)src);
+};
+
+void convertFromJson(JsonVariantConst src, LogType& dst) {
+  int t = src.as<const int>();
+  dst = (LogType)t;
+};
+
 bool Config::isConfigMode() {
   return _conf.configMode == 1;
 }
@@ -51,6 +64,45 @@ void Config::setOffsets(float x, float z) {
   _conf.offset_z = z;
 }
 
+bool Config::getIftttDetails(String *key, String *event) {
+  if(_conf.iftttKey[0] == 0) {
+    *key = "";
+    *event = "";
+    return false;
+  } else {
+    *key = _conf.iftttKey;
+    *event = _conf.iftttEventName;
+    return true;
+  }
+}
+
+bool Config::getBrewersFriendKey(String *key) {
+  if (_conf.brewersFriendKey[0] == 0) {
+    *key = "";
+    return false;
+  } else {
+    *key = _conf.brewersFriendKey;
+    return true;
+  }
+}
+
+LogType Config::getLogType() {
+  return _conf.logType;
+}
+
+void Config::setIftttDetails(const String& key, const String& event) {
+  snprintf(_conf.iftttKey, LOG_KEY_STR_LEN, key.c_str());
+  snprintf(_conf.iftttEventName, LOG_KEY_STR_LEN, event.c_str());
+}
+
+void Config::setBrewersFriendDetails(const String& key) {
+  snprintf(_conf.brewersFriendKey, LOG_KEY_STR_LEN, key.c_str());
+}
+
+void Config::setLogType(LogType type) {
+  _conf.logType = type;
+}
+
 void Config::print() {
   Serial.println("configMode: " + String(_conf.configMode));
   Serial.println("sleepDurationUs: " + String(_conf.sleepDurationUs));
@@ -58,6 +110,10 @@ void Config::print() {
   Serial.println("pass: " + String(_conf.pass));
   Serial.println("offset_x: " + String(_conf.offset_x));
   Serial.println("offset_z: " + String(_conf.offset_z));
+  Serial.println("logType: " + String((int)_conf.logType));
+  Serial.println("iftttKey: " + String(_conf.iftttKey));
+  Serial.println("iftttEvent: " + String(_conf.iftttEventName));
+  Serial.println("brewersFriendKey: " + String(_conf.brewersFriendKey));
 }
 
 void Config::load() {
@@ -66,7 +122,7 @@ void Config::load() {
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
   // Use arduinojson.org/v6/assistant to compute the capacity.
-  StaticJsonDocument<192> doc;
+  StaticJsonDocument<384> doc;
 
   // Deserialize the JSON document
   DeserializationError error = deserializeJson(doc, file);
@@ -83,6 +139,16 @@ void Config::load() {
           sizeof(_conf.pass));
   _conf.offset_x = doc["offset_x"] | 0.0;
   _conf.offset_z = doc["offset_z"] | 0.0;
+  _conf.logType = (LogType)doc["logType"] | LogType::None;
+  strlcpy(_conf.iftttKey,
+          doc["iftttKey"] | "",
+          sizeof(_conf.iftttKey));
+  strlcpy(_conf.iftttEventName,
+          doc["iftttEvent"] | "",
+          sizeof(_conf.iftttEventName));
+  strlcpy(_conf.brewersFriendKey,
+          doc["brewersFriendKey"] | "",
+          sizeof(_conf.brewersFriendKey));
 
   // Close the file (Curiously, File's destructor doesn't close the file)
   file.close();
@@ -100,7 +166,7 @@ void Config::save() {
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
   // Use arduinojson.org/assistant to compute the capacity.
-  StaticJsonDocument<192> doc;
+  StaticJsonDocument<384> doc;
 
   // Set the values in the document
   doc["configMode"] = _conf.configMode;
@@ -109,6 +175,10 @@ void Config::save() {
   doc["pass"] = _conf.pass;
   doc["offset_x"] = _conf.offset_x;
   doc["offset_z"] = _conf.offset_z;
+  doc["logType"] = (int)_conf.logType;
+  doc["iftttKey"] = _conf.iftttKey;
+  doc["iftttEvent"] = _conf.iftttEventName;
+  doc["brewersFriendKey"] = _conf.brewersFriendKey;
 
   // Serialize JSON to file
   if (serializeJson(doc, file) == 0) {

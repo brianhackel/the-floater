@@ -34,6 +34,7 @@ long configStartMs;
 long activePortalStartMs;
 
 void flashError() {
+  server.end();
   // blink red for 3 seconds to show failure
   unsigned long tStart = millis();
   blueBlinker.stop();
@@ -147,12 +148,18 @@ void setup() {
       String key;
       String event;
       Poster *poster = NULL;
-      if (FileSystem::getIftttDetails(&key, &event)) {
-        poster = new IFTTT(key, event);
-      } else if (FileSystem::getBrewersFriendKey(&key)) {
-        poster = new BrewersFriend(key);
-      } else {
-        // nothing configured for logging, that's fine. we just won't log until we're configured properly
+      switch (configuration.getLogType()) {
+        case LogType::IFTTT:
+          if (configuration.getIftttDetails(&key, &event))
+            poster = new IFTTT(key, event);
+          break;
+        case LogType::BrewersFriend:
+          if (configuration.getBrewersFriendKey(&key))
+            poster = new BrewersFriend(key);
+          break;
+        default:
+          // nothing configured for logging, that's fine. we just won't log until we're configured properly
+          break;
       }
       if (poster != NULL && !poster->postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
         // we failed to post an update

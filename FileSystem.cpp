@@ -1,9 +1,5 @@
 #include "FileSystem.h"
 
-const char* FileSystem::iftttKeyPath = "/iftttKey.txt";
-const char* FileSystem::iftttEventPath = "/iftttEvent.txt";
-const char* FileSystem::brewersFriendKeyPath = "/brewersFriendKey.txt";
-const char* FileSystem::logTypePath = "/logType.txt";
 const char* FileSystem::consecutiveFailuresPath = "/nFailures.txt";
 const char* FileSystem::allowedFailuresPath = "/allowedFailures.txt";
 const char* FileSystem::coefficientsPath = "/coefficients.txt";
@@ -13,33 +9,6 @@ const char* FileSystem::coefficientsPath = "/coefficients.txt";
 bool FileSystem::init() {
   return LittleFS.begin();
 }
-
-bool FileSystem::getIftttDetails(String *key, String *event) {
-  // Load values saved in LittleFS
-  String _key = readFile(iftttKeyPath);
-  String _event = readFile(iftttEventPath);
-
-  if(_key == ""){
-    *key = "";
-    *event = "";
-    return false;
-  } else {
-    *key = _key;
-    *event = _event;
-    return true;
-  }
-}
-
-bool FileSystem::getBrewersFriendKey(String *key) {
-  String _key = readFile(brewersFriendKeyPath);
-  if (_key == "") {
-    *key = "";
-    return false;
-  } else {
-    *key = _key;
-    return true;
-  }
-};
 
 bool FileSystem::getCoeffs(float *c3, float *c2, float *c1, float *c0) {
   String _line = readFile(coefficientsPath);

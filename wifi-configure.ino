@@ -44,11 +44,11 @@ void setupStateServer() {
   String json = "{";
   json += "\"time\": " + String(configuration.getSleepDurationUs() / 60000000ul);
   String key, event;
-  if (FileSystem::getIftttDetails(&key, &event)) {
+  if (configuration.getIftttDetails(&key, &event)) {
     json += ", \"type\": \"ifttt\"";
     json += ", \"iftttKey\": \"" + key + "\"";
     json += ", \"iftttEvent\": \"" + event + "\"";
-  } else if(FileSystem::getBrewersFriendKey(&key)) {
+  } else if(configuration.getBrewersFriendKey(&key)) {
     json += ", \"type\": \"brewersFriend\"";
     json += ", \"brewersFriendKey\": \"" + key + "\"";
   }
@@ -80,7 +80,7 @@ void setupStateServer() {
   });
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
-    FileSystem::clearLoggingConfigs();
+    configuration.clearLoggingConfigs();
     configuration.setConfigMode(false);
     request->send(200, "text/plain", "Done. The-Floater is going to standby mode. To wake: connect to power; press RESET button; wait for blue light; press RESET button again.");
     standby = true;
@@ -108,14 +108,15 @@ void setupStateServer() {
       FileSystem::writeAllowedFailures(p->value().toInt());
     }
     if (request->hasParam("logType", true, false)) {
-      FileSystem::clearLoggingConfigs();
+      configuration.clearLoggingConfigs();
       String type = request->getParam("logType", true, false)->value();
       if (type.equalsIgnoreCase("ifttt")) {
-        FileSystem::writeIftttKeyToFile(request->getParam("iftttKey", true, false)->value().c_str());
-        FileSystem::writeIftttEventToFile(request->getParam("iftttEvent", true, false)->value().c_str());
+        configuration.setLogType(LogType::IFTTT);
+        configuration.setIftttDetails(request->getParam("iftttKey", true, false)->value().c_str(),
+                                      request->getParam("iftttEvent", true, false)->value().c_str());
       } else if (type.equalsIgnoreCase("brewersFriend")) {
-        Serial.println("found brewers friend configuration");
-        FileSystem::writeBrewersFriendKeyToFile(request->getParam("brewersFriendKey", true, false)->value().c_str());
+        configuration.setLogType(LogType::BrewersFriend);
+        configuration.setBrewersFriendDetails(request->getParam("brewersFriendKey", true, false)->value().c_str());
         int c3 = 0, c2 = 0, c1 = 0, c0 = 0;
         if (request->hasParam("bfCubedCoeff", true, false))
           c3 = request->getParam("bfCubedCoeff", true, false)->value().toFloat();
