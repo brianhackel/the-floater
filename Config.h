@@ -26,11 +26,11 @@ class Config {
       char brewersFriendKey[LOG_KEY_STR_LEN];
     };
 
-    static const char* filename;
     Conf _conf;
     void load();
 
   public:
+    static const char* filename;
     Config();
     void save();
     void print();

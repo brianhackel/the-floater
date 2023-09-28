@@ -19,6 +19,7 @@
 #define RED_LED 0
 #define BLUE_LED 2
 #define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
+#define DEFAULT_ALLOWED_FAILURES 5
 
 AsyncWebServer server(80);
 DNSServer dnsServer;
@@ -32,6 +33,7 @@ Mpu6050 mpu;
 Config configuration;
 long configStartMs;
 long activePortalStartMs;
+const String consecutiveFailuresPath = "./consecutiveFailures.txt";
 
 void flashError() {
   server.end();
@@ -54,6 +56,38 @@ void sleep() {
   delay(500);
   ESP.deepSleep(sleepUs);
   delay(200);
+}
+
+int getConsecutiveFailures() {
+  File file = LittleFS.open(consecutiveFailuresPath, "r");
+  if(!file || file.isDirectory()){
+    Serial.println(String(consecutiveFailuresPath) + " - failed to open file for reading");
+    return 0;
+  }
+
+  String fileContent;
+  while(file.available()){
+    fileContent = file.readStringUntil('\n');
+    break;
+  }
+  file.close();
+  return fileContent.isEmpty() ? 0 : strtoul(fileContent.c_str(), NULL, 10);
+}
+
+void setConsecutiveFailures(int n) {
+  File file = LittleFS.open(consecutiveFailuresPath, "w");
+  if(!file){
+    Serial.println(String(consecutiveFailuresPath) + " - failed to open file for writing");
+    return;
+  }
+  if(!file.println(String(n))){
+    Serial.println(String(consecutiveFailuresPath) + " - frite failed");
+  }
+  file.close();
+}
+
+void incrementConsecutiveFailures() {
+  setConsecutiveFailures(getConsecutiveFailures() + 1);
 }
 
 void doRestart() {
@@ -90,7 +124,7 @@ void setup() {
 
   if (rinfo->reason == REASON_EXT_SYS_RST) {
     if (configuration.isConfigMode()) {
-      FileSystem::clearAll();
+      LittleFS.remove(Config::filename);
       configuration.clearWifiCredentials();
     } else {
       configuration.setConfigMode(true);
@@ -111,17 +145,17 @@ void setup() {
       lights.toggleRed();
     }
     if (!initWiFi(ssid, pass)) {
-      if (configuration.isConfigMode() || (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures())) {
+      if (configuration.isConfigMode() || (getConsecutiveFailures() > DEFAULT_ALLOWED_FAILURES)) {
         // purging the files to drop down to captive portal mode
-        FileSystem::clearAll();
+        LittleFS.remove(Config::filename);
         doRestart();
       } else {
-        FileSystem::incrementConsecutiveFailures();
+        incrementConsecutiveFailures();
         sleep();
       }
     }
     // at this point, we have successfully connected to WiFi
-    FileSystem::resetConsecutiveFailures();
+    setConsecutiveFailures(0);
     blueBlinker.stop();
     lights.turnOffBlue();
     float offsetX, offsetZ;

@@ -74,7 +74,7 @@ void setupStateServer() {
   });
 
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
-    FileSystem::clearAll();
+    LittleFS.remove(Config::filename);
     restart = true;
     request->send(200, "text/plain", "Done. The-Floater will restart. You will need to connect to The-Floater's WiFi network to reconfigure.");
   });
@@ -103,10 +103,6 @@ void setupStateServer() {
       timeMins = p->value().toInt();
       configuration.setSleepDuration(timeMins * 60000000l);
     }
-    if (request->hasParam("failures", true, false)) {
-      AsyncWebParameter* p = request->getParam("time", true, false);
-      FileSystem::writeAllowedFailures(p->value().toInt());
-    }
     if (request->hasParam("logType", true, false)) {
       configuration.clearLoggingConfigs();
       String type = request->getParam("logType", true, false)->value();
@@ -117,16 +113,14 @@ void setupStateServer() {
       } else if (type.equalsIgnoreCase("brewersFriend")) {
         configuration.setLogType(LogType::BrewersFriend);
         configuration.setBrewersFriendDetails(request->getParam("brewersFriendKey", true, false)->value().c_str());
-        int c3 = 0, c2 = 0, c1 = 0, c0 = 0;
-        if (request->hasParam("bfCubedCoeff", true, false))
-          c3 = request->getParam("bfCubedCoeff", true, false)->value().toFloat();
+        int c2 = 0, c1 = 0, c0 = 0;
         if (request->hasParam("bfSquaredCoeff", true, false))
           c2 = request->getParam("bfSquaredCoeff", true, false)->value().toFloat();
         if (request->hasParam("bfFirstDegreeCoeff", true, false))
           c1 = request->getParam("bfFirstDegreeCoeff", true, false)->value().toFloat();
         if (request->hasParam("bfZeroDegreeCoeff", true, false))
           c0 = request->getParam("bfZeroDegreeCoeff", true, false)->value().toFloat();
-        FileSystem::writeCoeffsToFile(c3, c2, c1, c0);
+        FileSystem::writeCoeffsToFile(0, c2, c1, c0);
       }
     }
 //    for(int i=0;i<params;i++){

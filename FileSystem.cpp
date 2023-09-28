@@ -1,10 +1,6 @@
 #include "FileSystem.h"
 
-const char* FileSystem::consecutiveFailuresPath = "/nFailures.txt";
-const char* FileSystem::allowedFailuresPath = "/allowedFailures.txt";
 const char* FileSystem::coefficientsPath = "/coefficients.txt";
-
-#define DEFAULT_ALLOWED_FAILURES 5
 
 bool FileSystem::init() {
   return LittleFS.begin();
@@ -45,20 +41,6 @@ void FileSystem::writeCoeffsToFile(const float c3, const float c2, const float c
   String line = "";
   line = line + c3 + "," + c2 + "," + c1 + "," + c0;
   writeFile(coefficientsPath, line.c_str());
-}
-
-unsigned int FileSystem::getAllowedFailures() {
-  String _failures = readFile(allowedFailuresPath);
-  return _failures.isEmpty() ? DEFAULT_ALLOWED_FAILURES : strtoul(_failures.c_str(), NULL, 10);
-}
-
-void FileSystem::incrementConsecutiveFailures() {
-  writeFile(consecutiveFailuresPath, String(getConsecutiveFailures() + 1).c_str());
-}
-
-unsigned int FileSystem::getConsecutiveFailures() {
-  String n = readFile(consecutiveFailuresPath);
-  return n.isEmpty() ? 0 : strtoul(n.c_str(), NULL, 10);
 }
 
 // Read File from LittleFS

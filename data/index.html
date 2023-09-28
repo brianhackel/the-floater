@@ -31,9 +31,6 @@
           <button type="button" id="btnTare">TARE TILT</button><br>
           <label for="time">Time Between Logs:</label>
           <input class="no-spinner" type="number" id="time" name="time" value="30">Minutes<br>
-          <label for="failures">Consecutive Failures Allowed:</label>
-          <select id="failures" name="failures" title="The total number of WiFi or logging failures before the device will slip back into Config mode.">
-          </select><br>
           <label for="logType">Log To:</label>
           <select name="logType" id="logType">
             <option value="" disabled selected>Choose One</option>
@@ -52,8 +49,6 @@
               <input type="password" id="brewersFriendKey" name="brewersFriendKey"><br>
               <div class="card-title">Polynomial Coefficients for tilt to gravity fit</div>
               <div class="inputTable">
-                <input class="inputTableCell no-spinner" type="number" id="bfCubedCoeff" name="'bfCubedCoeff">
-                <label>x<sup>3</sup> + </label>
                 <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="'bfSquaredCoeff">
                 <label>x<sup>2</sup> + </label>
                 <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="'bfFirstDegreeCoeff">
