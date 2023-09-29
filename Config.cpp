@@ -103,6 +103,18 @@ void Config::setLogType(LogType type) {
   _conf.logType = type;
 }
 
+void Config::getCoeffs(float *c2, float *c1, float *c0) {
+  *c2 = _conf.coefficients[0];
+  *c1 = _conf.coefficients[1];
+  *c0 = _conf.coefficients[2];
+}
+
+void Config::setCoeffs(const float c2, const float c1, const float c0) {
+  _conf.coefficients[0] = c2;
+  _conf.coefficients[1] = c1;
+  _conf.coefficients[2] = c0;
+}
+
 void Config::print() {
   Serial.println("configMode: " + String(_conf.configMode));
   Serial.println("sleepDurationUs: " + String(_conf.sleepDurationUs));
@@ -114,6 +126,9 @@ void Config::print() {
   Serial.println("iftttKey: " + String(_conf.iftttKey));
   Serial.println("iftttEvent: " + String(_conf.iftttEventName));
   Serial.println("brewersFriendKey: " + String(_conf.brewersFriendKey));
+  Serial.println("coefficients: " + String(_conf.coefficients[0]) + "x^2 + "
+                                  + String(_conf.coefficients[1]) + "x + "
+                                  + String(_conf.coefficients[2]));
 }
 
 void Config::load() {
@@ -149,6 +164,9 @@ void Config::load() {
   strlcpy(_conf.brewersFriendKey,
           doc["brewersFriendKey"] | "",
           sizeof(_conf.brewersFriendKey));
+  for (int i = 0; i < N_COEFFICIENTS; i++) {
+    _conf.coefficients[i] = doc["coefficients"][i] | 0.0;
+  }
 
   // Close the file (Curiously, File's destructor doesn't close the file)
   file.close();
@@ -179,6 +197,9 @@ void Config::save() {
   doc["iftttKey"] = _conf.iftttKey;
   doc["iftttEvent"] = _conf.iftttEventName;
   doc["brewersFriendKey"] = _conf.brewersFriendKey;
+  for (int i = 0; i < N_COEFFICIENTS; i++) {
+    doc["coefficients"][i] = _conf.coefficients[i];
+  }
 
   // Serialize JSON to file
   if (serializeJson(doc, file) == 0) {

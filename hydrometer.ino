@@ -6,7 +6,6 @@
 #include <TickTwo.h>
 #include "temperature.h"
 #include "Lights.h"
-#include "FileSystem.h"
 #include "Mpu6050.h"
 #include <DNSServer.h>
 #include "Battery.h"
@@ -102,11 +101,6 @@ void setup() {
 
   configuration.print();
 
-  if (!FileSystem::init()) {
-    Serial.println("File System failed to init");
-    flashError();
-    doRestart();
-  }
   String ssid, pass;
   long tStart;
 
@@ -188,8 +182,11 @@ void setup() {
             poster = new IFTTT(key, event);
           break;
         case LogType::BrewersFriend:
-          if (configuration.getBrewersFriendKey(&key))
-            poster = new BrewersFriend(key);
+          if (configuration.getBrewersFriendKey(&key)) {
+            float c2, c1, c0;
+            configuration.getCoeffs(&c2, &c1, &c0);
+            poster = new BrewersFriend(key, c2, c1, c0);
+          }
           break;
         default:
           // nothing configured for logging, that's fine. we just won't log until we're configured properly

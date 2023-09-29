@@ -8,6 +8,7 @@
 #define DEFAULT_SLEEP_US 30 * 60000000
 #define WIFI_CRED_MAX_LEN 64
 #define LOG_KEY_STR_LEN 128
+#define N_COEFFICIENTS 3 // squared, first-degree, constant
 
 enum class LogType {None, IFTTT, BrewersFriend};
 
@@ -24,6 +25,7 @@ class Config {
       char iftttKey[LOG_KEY_STR_LEN];
       char iftttEventName[LOG_KEY_STR_LEN];
       char brewersFriendKey[LOG_KEY_STR_LEN];
+      float coefficients[N_COEFFICIENTS]; // 0-->squared, 1-->first-degree, 2-->constant
     };
 
     Conf _conf;
@@ -50,5 +52,7 @@ class Config {
     void setBrewersFriendDetails(const String& key);
     void setLogType(LogType type);
     void clearLoggingConfigs() { setLogType(LogType::None); };
+    void getCoeffs(float *c2, float *c1, float *c0);
+    void setCoeffs(const float c2, const float c1, const float c0);
 };
 #endif

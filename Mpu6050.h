@@ -4,7 +4,6 @@
 #include <math.h>
 #include <Adafruit_MPU6050.h>
 #include <RunningMedian.h>
-#include "FileSystem.h"
 
 #define N_SAMPLES 49
 #define N_SAMPLES_TO_AVG 29

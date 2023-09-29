@@ -120,7 +120,7 @@ void setupStateServer() {
           c1 = request->getParam("bfFirstDegreeCoeff", true, false)->value().toFloat();
         if (request->hasParam("bfZeroDegreeCoeff", true, false))
           c0 = request->getParam("bfZeroDegreeCoeff", true, false)->value().toFloat();
-        FileSystem::writeCoeffsToFile(0, c2, c1, c0);
+        configuration.setCoeffs(c2, c1, c0);
       }
     }
 //    for(int i=0;i<params;i++){
