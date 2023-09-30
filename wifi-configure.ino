@@ -85,8 +85,6 @@ void setupStateServer() {
   });
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
-    configuration.clearLoggingConfigs();
-    configuration.setConfigMode(false);
     request->send(200, "text/plain", "Done. The-Floater is going to standby mode. To wake: connect to power; press RESET button; wait for blue light; press RESET button again.");
     standby = true;
   });

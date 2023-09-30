@@ -18,6 +18,7 @@
 #define RED_LED 0
 #define BLUE_LED 2
 #define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
+#define STANDBY_SLEEP_TIME_US 60 * 60 * 1000000 // 1 hour
 #define DEFAULT_ALLOWED_FAILURES 5
 
 AsyncWebServer server(80);
@@ -202,10 +203,12 @@ void setup() {
 
 void loop() {
   if (standby) {
-    delay(1000);
     server.end();
+    configuration.clearLoggingConfigs();
+    configuration.setConfigMode(false);
+    configuration.setSleepDuration(STANDBY_SLEEP_TIME_US);
     configuration.save();
-    ESP.deepSleep(0);
+    sleep();
   }
   if (restart) {
     doRestart();
