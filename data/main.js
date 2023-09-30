@@ -292,11 +292,52 @@ document.addEventListener('DOMContentLoaded', function () {
           $("#iftttKey").val(data["iftttKey"]);
           $("#iftttEvent").val(data["iftttEvent"]);
         }
-        if (data.hasOwnProperty("brewersFriendKey")) {
+        if (data.hasOwnProperty("brewersFriendKey"))
           $("#brewersFriendKey").val(data["brewersFriendKey"]);
+        if (data.hasOwnProperty("bfSquaredCoeff"))
+          $("#bfSquaredCoeff").val(data["bfSquaredCoeff"].toFixed(6));
+        if (data.hasOwnProperty("bfFirstDegreeCoeff"))
+          $("#bfFirstDegreeCoeff").val(data["bfFirstDegreeCoeff"].toFixed(6));
+        if (data.hasOwnProperty("bfZeroDegreeCoeff"))
+          $("#bfZeroDegreeCoeff").val(data["bfZeroDegreeCoeff"].toFixed(6));
+      }
+    });
+  });
+
+  $('#logType').on('change', function (e) {
+    var valueSelected = this.value;
+    $('.loggingForm').hide();
+    $('.loggingForm *').attr('disabled', true);
+    switch (valueSelected) {
+      case "ifttt":
+        $('#logging-ifttt').show();
+        $('#logging-ifttt *').attr('disabled', false);
+        break;
+      case "brewersFriend":
+        $('#logging-brewersFriend').show();
+        $('#logging-brewersFriend *').attr('disabled', false);
+        break;
+      default:
+        console.log("oops, bad value");
+    }
+  });
+  $("#configuration").validate({
+    errorClass: "my-error-class",
+    errorPlacement: function(error, element) {
+      $('#errorMessage').html(error);
+    },
+    rules: {
+      time: {
+        required: true,
+        min: {
+          param: 15,
+          depends: function(element) {
+            return $("#logType").val() === "brewersFriend";
+          }
         }
       }
-    });  
+    }
   });
+
 });
 

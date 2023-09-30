@@ -1,6 +1,6 @@
 #include "Mpu6050.h"
 
-bool Mpu6050::init() {
+bool Mpu6050::init(float offsetX, float offsetZ) {
   if (!this->_mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
     return false;
@@ -8,7 +8,8 @@ bool Mpu6050::init() {
 
   wake();
 
-  FileSystem::getOffsets(&x_offset, &z_offset);
+  x_offset = offsetX;
+  z_offset = offsetZ;
 
   this->_mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
   this->_mpu.setGyroStandby(true, true, true);
@@ -21,7 +22,7 @@ void Mpu6050::sleepMpu6050(bool shouldSleep) {
    this->_mpu.enableSleep(shouldSleep);
 }
 
-void Mpu6050::tare() {
+void Mpu6050::tare(float *x, float *z) {
   sensors_event_t a;
   float accelX, accelY, accelZ;
   RunningMedian ex = RunningMedian(N_SAMPLES);
@@ -34,7 +35,8 @@ void Mpu6050::tare() {
     ex.add(accelX);
     zee.add(accelZ);
   }
-  FileSystem::writeOffsetsToFile(ex.getAverage(N_SAMPLES_TO_AVG), zee.getAverage(N_SAMPLES_TO_AVG));
+  *x = ex.getAverage(N_SAMPLES_TO_AVG);
+  *z = zee.getAverage(N_SAMPLES_TO_AVG);
 }
 
 float Mpu6050::measureAngle() {

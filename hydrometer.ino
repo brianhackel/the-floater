@@ -6,18 +6,19 @@
 #include <TickTwo.h>
 #include "temperature.h"
 #include "Lights.h"
-#include "FileSystem.h"
 #include "Mpu6050.h"
 #include <DNSServer.h>
 #include "Battery.h"
 #include "BrewersFriend.h"
 #include "IFTTT.h"
+#include "Config.h"
 
 #define VERSION "1.0.0"
 
 #define RED_LED 0
 #define BLUE_LED 2
 #define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
+#define DEFAULT_ALLOWED_FAILURES 5
 
 AsyncWebServer server(80);
 DNSServer dnsServer;
@@ -28,11 +29,13 @@ Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
 TickTwo blueBlinker([](){lights.toggleBlue();}, 250, 0, MILLIS);
 Mpu6050 mpu;
-bool configMode = false;
+Config configuration;
 long configStartMs;
 long activePortalStartMs;
+const String consecutiveFailuresPath = "./consecutiveFailures.txt";
 
 void flashError() {
+  server.end();
   // blink red for 3 seconds to show failure
   unsigned long tStart = millis();
   blueBlinker.stop();
@@ -45,7 +48,8 @@ void flashError() {
 }
 
 void sleep() {
-  unsigned long sleepUs = FileSystem::getSleepDurationUs();
+  unsigned long sleepUs = configuration.getSleepDurationUs();
+  configuration.save();
   Serial.println("going to sleep for " + String(sleepUs / 1000000) + " seconds");
   mpu.sleep();
   delay(500);
@@ -53,18 +57,52 @@ void sleep() {
   delay(200);
 }
 
+int getConsecutiveFailures() {
+  File file = LittleFS.open(consecutiveFailuresPath, "r");
+  if(!file || file.isDirectory()){
+    Serial.println(String(consecutiveFailuresPath) + " - failed to open file for reading");
+    return 0;
+  }
+
+  String fileContent;
+  while(file.available()){
+    fileContent = file.readStringUntil('\n');
+    break;
+  }
+  file.close();
+  return fileContent.isEmpty() ? 0 : strtoul(fileContent.c_str(), NULL, 10);
+}
+
+void setConsecutiveFailures(int n) {
+  File file = LittleFS.open(consecutiveFailuresPath, "w");
+  if(!file){
+    Serial.println(String(consecutiveFailuresPath) + " - failed to open file for writing");
+    return;
+  }
+  if(!file.println(String(n))){
+    Serial.println(String(consecutiveFailuresPath) + " - frite failed");
+  }
+  file.close();
+}
+
+void incrementConsecutiveFailures() {
+  setConsecutiveFailures(getConsecutiveFailures() + 1);
+}
+
+void doRestart() {
+  server.end();
+  delay(1000);
+  configuration.save();
+  ESP.restart();
+}
+
 void setup() {
   Serial.begin(115200);
 
-  if (!FileSystem::init()) {
-    Serial.println("File System failed to init");
-    flashError();
-    ESP.restart();
-  }
+  configuration.print();
+
   String ssid, pass;
   long tStart;
-
-  configMode = FileSystem::isConfigMode();
 
   rst_info *rinfo;
   rinfo = ESP.getResetInfoPtr();
@@ -79,10 +117,11 @@ void setup() {
   Serial.println(String("ResetInfo.reason = ") + rinfo->reason);
 
   if (rinfo->reason == REASON_EXT_SYS_RST) {
-    if (configMode) {
-      FileSystem::clearAll();
+    if (configuration.isConfigMode()) {
+      LittleFS.remove(Config::filename);
+      configuration.clearWifiCredentials();
     } else {
-      FileSystem::setConfigMode(true);
+      configuration.setConfigMode(true);
     }
     blueBlinker.stop();
     redBlinker.stop();
@@ -94,26 +133,28 @@ void setup() {
     return;
   }
 
-  if (FileSystem::wifiCredentialsReady(&ssid, &pass)) {
+  if (configuration.areWifiCredentialsReady(&ssid, &pass)) {
     if (Battery::getPercentage() < 20) {
       lights.turnOffRed();
       lights.toggleRed();
     }
     if (!initWiFi(ssid, pass)) {
-      if (configMode || (FileSystem::getConsecutiveFailures() > FileSystem::getAllowedFailures())) {
+      if (configuration.isConfigMode() || (getConsecutiveFailures() > DEFAULT_ALLOWED_FAILURES)) {
         // purging the files to drop down to captive portal mode
-        FileSystem::clearAll();
-        ESP.restart();
+        LittleFS.remove(Config::filename);
+        doRestart();
       } else {
-        FileSystem::incrementConsecutiveFailures();
+        incrementConsecutiveFailures();
         sleep();
       }
     }
     // at this point, we have successfully connected to WiFi
-    FileSystem::resetConsecutiveFailures();
+    setConsecutiveFailures(0);
     blueBlinker.stop();
     lights.turnOffBlue();
-    if (!mpu.init()) {
+    float offsetX, offsetZ;
+    configuration.getOffsets(&offsetX, &offsetZ);
+    if (!mpu.init(offsetX, offsetZ)) {
       Serial.println("Could not init accelerometer");
       flashError();
       sleep();
@@ -123,7 +164,7 @@ void setup() {
       flashError();
       sleep();
     }
-    if(configMode) {
+    if(configuration.isConfigMode()) {
       setupStateServer();
 
 
@@ -161,12 +202,21 @@ void setup() {
       String key;
       String event;
       Poster *poster = NULL;
-      if (FileSystem::getIftttDetails(&key, &event)) {
-        poster = new IFTTT(key, event);
-      } else if (FileSystem::getBrewersFriendKey(&key)) {
-        poster = new BrewersFriend(key);
-      } else {
-        // nothing configured for logging, that's fine. we just won't log until we're configured properly
+      switch (configuration.getLogType()) {
+        case LogType::IFTTT:
+          if (configuration.getIftttDetails(&key, &event))
+            poster = new IFTTT(key, event);
+          break;
+        case LogType::BrewersFriend:
+          if (configuration.getBrewersFriendKey(&key)) {
+            float c2, c1, c0;
+            configuration.getCoeffs(&c2, &c1, &c0);
+            poster = new BrewersFriend(key, c2, c1, c0);
+          }
+          break;
+        default:
+          // nothing configured for logging, that's fine. we just won't log until we're configured properly
+          break;
       }
       if (poster != NULL && !poster->postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
         // we failed to post an update
@@ -178,7 +228,7 @@ void setup() {
   } else {
     // the submit POST will set the reset flag to true to signal the loop
     // i think we should turn on a LONG flasher and have the post turn it off
-    FileSystem::setConfigMode(false);
+    configuration.setConfigMode(false);
     setupAccessPoint();
     activePortalStartMs = millis();
     blueBlinker.start();
@@ -189,17 +239,18 @@ void setup() {
 void loop() {
   if (standby) {
     delay(1000);
+    server.end();
+    configuration.save();
     ESP.deepSleep(0);
   }
   if (restart) {
-    delay(1000);
-    ESP.restart();
+    doRestart();
   } else {
     blueBlinker.update();
     redBlinker.update();
-    if (FileSystem::isConfigMode()) {
+    if (configuration.isConfigMode()) {
       if (millis() - configStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
-        FileSystem::setConfigMode(false);
+        configuration.setConfigMode(false);
         restart = true;
         return;
       }

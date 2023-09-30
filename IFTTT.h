@@ -4,12 +4,12 @@
 
 class IFTTT : public Poster {
   private:
-    const String BASE_URL = "http://maker.ifttt.com/trigger/";
-    const String NAME = "IFTTT";
+    static const String BASE_URL;
+    static const String NAME;
 
   public:
-    IFTTT(const String key, const String eventName) : Poster(BASE_URL + eventName + "/json/with/key/" + key, NAME) {};
-    String getJson(float angle, float temperature, long batteryPercentage) override;
+    IFTTT(const String& key, const String& eventName);
+    String getJson(float angle, float temperature, long batteryPercentage) const override;
 };
 
 #endif
