@@ -22,7 +22,7 @@ bool initWiFi(String ssid, String pass) {
     return false;
   }
 
-  if (configuration.isConfigMode()) {
+  if (configuration.getMode() == Mode::Config) {
     Serial.println(WiFi.localIP());
     if (!MDNS.begin(hostname)) {
       Serial.println("Error setting up MDNS responder!");
@@ -85,7 +85,7 @@ void setupStateServer() {
   });
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Done. The-Floater is going to standby mode. To wake: connect to power; press RESET button; wait for blue light; press RESET button again.");
+    request->send(200, "text/plain", "Done. The-Floater is going to standby mode. To wake: connect to power and press RESET button.");
     standby = true;
   });
 
@@ -126,11 +126,7 @@ void setupStateServer() {
         configuration.setCoeffs(c2, c1, c0);
       }
     }
-//    for(int i=0;i<params;i++){
-//      AsyncWebParameter* p = request->getParam(i);
-//      Serial.println(p->name() + ": " + p->value() + "  post:  " + p->isPost() + "   file: " + p->isFile());
-//    }
-    configuration.setConfigMode(false);
+    configuration.setMode(Mode::Operate);
     request->send(200, "text/plain", "Done. The-Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
     restart = true;
   });
@@ -187,7 +183,7 @@ void setupAccessPoint() {
       pass = request->getParam("pass", true, false)->value();
     }
     configuration.setWifiCredentials(ssid, pass);
-    configuration.setConfigMode(true);
+    configuration.setMode(Mode::Config);
     restart = true;
     String linkStr = "http://" + hostname + ".local";
     request->send(200, "text/html", "Done. The-Floater will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");

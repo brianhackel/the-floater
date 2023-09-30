@@ -18,13 +18,14 @@
 #define RED_LED 0
 #define BLUE_LED 2
 #define CONFIG_MODE_TIMEOUT_MILLIS 300000  // 5 minutes
-#define STANDBY_SLEEP_TIME_US 60 * 60 * 1000000 // 1 hour
+#define STANDBY_SLEEP_TIME_US 60 * 60000000l // 1 hour
 #define DEFAULT_ALLOWED_FAILURES 5
 
 AsyncWebServer server(80);
 DNSServer dnsServer;
 boolean restart = false;
 boolean standby = false;
+boolean error = false;
 Temperature t;
 Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
@@ -34,19 +35,6 @@ Config configuration;
 long configStartMs;
 long activePortalStartMs;
 const String consecutiveFailuresPath = "./consecutiveFailures.txt";
-
-void flashError() {
-  server.end();
-  // blink red for 3 seconds to show failure
-  unsigned long tStart = millis();
-  blueBlinker.stop();
-  redBlinker.start();
-  while (millis() - tStart < 3000) {
-    redBlinker.update();
-  }
-  redBlinker.stop();
-  lights.turnOffRed();
-}
 
 void sleep() {
   unsigned long sleepUs = configuration.getSleepDurationUs();
@@ -108,19 +96,24 @@ void setup() {
   rst_info *rinfo;
   rinfo = ESP.getResetInfoPtr();
   if (rinfo->reason == REASON_EXT_SYS_RST) {
-    if (configuration.isConfigMode()) {
+    if (configuration.getMode() == Mode::Config) {
       LittleFS.remove(Config::filename);
       configuration.clearWifiCredentials();
     } else {
-      configuration.setConfigMode(true);
+      configuration.setMode(Mode::Config);
     }
     blueBlinker.stop();
     redBlinker.stop();
     lights.turnOffRed();
     lights.toggleRed();
-    delay(3);
+    delay(2000);
     lights.turnOffRed();
     restart = true;
+    return;
+  }
+
+  if (configuration.getMode() == Mode::Standby) {
+    standby = true;
     return;
   }
 
@@ -130,7 +123,7 @@ void setup() {
       lights.toggleRed();
     }
     if (!initWiFi(ssid, pass)) {
-      if (configuration.isConfigMode() || (getConsecutiveFailures() > DEFAULT_ALLOWED_FAILURES)) {
+      if (configuration.getMode() == Mode::Config || (getConsecutiveFailures() > DEFAULT_ALLOWED_FAILURES)) {
         // purging the files to drop down to captive portal mode
         LittleFS.remove(Config::filename);
         doRestart();
@@ -147,15 +140,15 @@ void setup() {
     configuration.getOffsets(&offsetX, &offsetZ);
     if (!mpu.init(offsetX, offsetZ)) {
       Serial.println("Could not init accelerometer");
-      flashError();
-      sleep();
+      error = true;
+      return;
     }
     if (!t.begin()) {
       Serial.println("Could not init temperature sensor");
-      flashError();
-      sleep();
+      error = true;
+      return;
     }
-    if(configuration.isConfigMode()) {
+    if(configuration.getMode() == Mode::Config) {
       setupStateServer();
       blueBlinker.stop();
       // we want the config mode to blink SLOW
@@ -185,15 +178,15 @@ void setup() {
       }
       if (poster != NULL && !poster->postOneUpdate(mpu.measureAngle(), t.getTemperatureF(), Battery::getPercentage())) {
         // we failed to post an update
-        // blink red for 3 seconds to show failure
-        flashError();
+        error = true;
+        return;
       }
       sleep();
     }
   } else {
     // the submit POST will set the reset flag to true to signal the loop
     // i think we should turn on a LONG flasher and have the post turn it off
-    configuration.setConfigMode(false);
+    configuration.setMode(Mode::Operate);
     setupAccessPoint();
     activePortalStartMs = millis();
     blueBlinker.start();
@@ -204,20 +197,34 @@ void setup() {
 void loop() {
   if (standby) {
     server.end();
-    configuration.clearLoggingConfigs();
-    configuration.setConfigMode(false);
-    configuration.setSleepDuration(STANDBY_SLEEP_TIME_US);
+    delay(3000);
+    configuration.setMode(Mode::Standby);
     configuration.save();
-    sleep();
+    Serial.println("going into standby mode");
+    ESP.deepSleep(STANDBY_SLEEP_TIME_US);
+  }
+  if (error) {
+      server.end();
+      // blink red for 3 seconds to show failure
+      unsigned long tStart = millis();
+      blueBlinker.stop();
+      redBlinker.start();
+      while (millis() - tStart < 3000) {
+        redBlinker.update();
+        delay(10);
+      }
+      redBlinker.stop();
+      lights.turnOffRed();
+      sleep();
   }
   if (restart) {
     doRestart();
   } else {
     blueBlinker.update();
     redBlinker.update();
-    if (configuration.isConfigMode()) {
+    if (configuration.getMode() == Mode::Config) {
       if (millis() - configStartMs > CONFIG_MODE_TIMEOUT_MILLIS) {
-        configuration.setConfigMode(false);
+        configuration.setMode(Mode::Operate);
         restart = true;
         return;
       }

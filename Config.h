@@ -11,11 +11,12 @@
 #define N_COEFFICIENTS 3 // squared, first-degree, constant
 
 enum class LogType {None, IFTTT, BrewersFriend};
+enum class Mode {Config, Operate, Standby};
 
 class Config {
   private:
     struct Conf {
-      int configMode;
+      Mode mode;
       long sleepDurationUs;
       char ssid[WIFI_CRED_MAX_LEN];
       char pass[WIFI_CRED_MAX_LEN];
@@ -36,8 +37,8 @@ class Config {
     Config();
     void save();
     void print();
-    bool isConfigMode();
-    void setConfigMode(bool configMode);
+    Mode getMode();
+    void setMode(Mode mode);
     long getSleepDurationUs();
     void setSleepDuration(long durationUs);
     bool areWifiCredentialsReady(String *ssid, String *pass);
