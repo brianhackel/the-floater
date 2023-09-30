@@ -106,16 +106,6 @@ void setup() {
 
   rst_info *rinfo;
   rinfo = ESP.getResetInfoPtr();
-
-    Serial.println("REASON_DEFAULT_RST        = 0,\n" \
-      "REASON_WDT_RST            = 1,\n" \
-      "REASON_EXCEPTION_RST    = 2,\n" \
-      "REASON_SOFT_WDT_RST       = 3,\n" \
-      "REASON_SOFT_RESTART     = 4,\n" \
-      "REASON_DEEP_SLEEP_AWAKE    = 5,\n" \
-      "REASON_EXT_SYS_RST      = 6\n\n");
-  Serial.println(String("ResetInfo.reason = ") + rinfo->reason);
-
   if (rinfo->reason == REASON_EXT_SYS_RST) {
     if (configuration.isConfigMode()) {
       LittleFS.remove(Config::filename);
