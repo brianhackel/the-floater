@@ -106,16 +106,6 @@ void setup() {
 
   rst_info *rinfo;
   rinfo = ESP.getResetInfoPtr();
-
-    Serial.println("REASON_DEFAULT_RST        = 0,\n" \
-      "REASON_WDT_RST            = 1,\n" \
-      "REASON_EXCEPTION_RST    = 2,\n" \
-      "REASON_SOFT_WDT_RST       = 3,\n" \
-      "REASON_SOFT_RESTART     = 4,\n" \
-      "REASON_DEEP_SLEEP_AWAKE    = 5,\n" \
-      "REASON_EXT_SYS_RST      = 6\n\n");
-  Serial.println(String("ResetInfo.reason = ") + rinfo->reason);
-
   if (rinfo->reason == REASON_EXT_SYS_RST) {
     if (configuration.isConfigMode()) {
       LittleFS.remove(Config::filename);
@@ -166,32 +156,6 @@ void setup() {
     }
     if(configuration.isConfigMode()) {
       setupStateServer();
-
-
-      // TODO: remove debug vvvvvvvvvvvvvvvvvv
-      WiFiClient client;
-      HTTPClient http;
-      String url = "http://maker.ifttt.com/trigger/";
-      url += "generic_message";
-      url += "/with/key/";
-      url += "cnyJ7UpiB9U1QAAfP7mQo5";
-      http.begin(client, url);
-      
-      http.addHeader("Content-Type", "application/json");
-      String jsonString = "";
-      jsonString += "{\"value1\":\"";
-      jsonString += "floater is in config mode.";
-      jsonString += "\"}";
-
-      // Send HTTP POST request
-      Serial.println("posting to IFTTT: " + jsonString);
-      int httpResponseCode = http.POST(jsonString);
-      http.end();
-      // ======================================
-
-
-
-
       blueBlinker.stop();
       // we want the config mode to blink SLOW
       blueBlinker = TickTwo([](){lights.toggleBlue();}, 1000, 0, MILLIS);
