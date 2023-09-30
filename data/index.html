@@ -49,11 +49,11 @@
               <input type="password" id="brewersFriendKey" name="brewersFriendKey"><br>
               <div class="card-title">Polynomial Coefficients for tilt to gravity fit</div>
               <div class="inputTable">
-                <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="'bfSquaredCoeff">
+                <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="bfSquaredCoeff">
                 <label>x<sup>2</sup> + </label>
-                <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="'bfFirstDegreeCoeff">
+                <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="bfFirstDegreeCoeff">
                 <label>x + </label>
-                <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="'bfZeroDegreeCoeff">
+                <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="bfZeroDegreeCoeff">
               </div>
             </div>
           </div>
@@ -67,41 +67,5 @@
       </div>
     </div>
     <div class="footer">%version%</div>
-    <script>
-      $('#logType').on('change', function (e) {
-        var valueSelected = this.value;
-        $('.loggingForm').hide();
-        $('.loggingForm *').attr('disabled', true);
-        switch (valueSelected) {
-          case "ifttt":
-            $('#logging-ifttt').show();
-            $('#logging-ifttt *').attr('disabled', false);
-            break;
-          case "brewersFriend":
-            $('#logging-brewersFriend').show();
-            $('#logging-brewersFriend *').attr('disabled', false);
-            break;
-          default:
-            console.log("oops, bad value");
-        }
-      });
-      $("#configuration").validate({
-        errorClass: "my-error-class",
-        errorPlacement: function(error, element) {
-          $('#errorMessage').html(error);
-        },
-        rules: {
-          time: {
-            required: true,
-            min: {
-              param: 15,
-              depends: function(element) {
-                return $("#logType").val() === "brewersFriend";
-              }
-            }
-          }
-        }
-      });
-    </script>
   </body>
 </html>

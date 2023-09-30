@@ -51,6 +51,11 @@ void setupStateServer() {
   } else if(configuration.getBrewersFriendKey(&key)) {
     json += ", \"type\": \"brewersFriend\"";
     json += ", \"brewersFriendKey\": \"" + key + "\"";
+    float c2, c1, c0;
+    configuration.getCoeffs(&c2, &c1, &c0);
+    json += ", \"bfSquaredCoeff\": " + String(c2,12);
+    json += ", \"bfFirstDegreeCoeff\": " + String(c1,12);
+    json += ", \"bfZeroDegreeCoeff\": " + String(c0,12);
   }
   json += "}";
   const String logging_json = json;
@@ -113,7 +118,7 @@ void setupStateServer() {
       } else if (type.equalsIgnoreCase("brewersFriend")) {
         configuration.setLogType(LogType::BrewersFriend);
         configuration.setBrewersFriendDetails(request->getParam("brewersFriendKey", true, false)->value().c_str());
-        int c2 = 0, c1 = 0, c0 = 0;
+        float c2 = 0, c1 = 0, c0 = 0;
         if (request->hasParam("bfSquaredCoeff", true, false))
           c2 = request->getParam("bfSquaredCoeff", true, false)->value().toFloat();
         if (request->hasParam("bfFirstDegreeCoeff", true, false))

@@ -126,9 +126,9 @@ void Config::print() {
   Serial.println("iftttKey: " + String(_conf.iftttKey));
   Serial.println("iftttEvent: " + String(_conf.iftttEventName));
   Serial.println("brewersFriendKey: " + String(_conf.brewersFriendKey));
-  Serial.println("coefficients: " + String(_conf.coefficients[0]) + "x^2 + "
-                                  + String(_conf.coefficients[1]) + "x + "
-                                  + String(_conf.coefficients[2]));
+  Serial.println("coefficients: " + String(_conf.coefficients[0], 12) + "x^2 + "
+                                  + String(_conf.coefficients[1], 12) + "x + "
+                                  + String(_conf.coefficients[2], 12));
 }
 
 void Config::load() {
