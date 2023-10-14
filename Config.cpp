@@ -20,12 +20,25 @@ void convertFromJson(JsonVariantConst src, LogType& dst) {
   dst = (LogType)t;
 };
 
-bool Config::isConfigMode() {
-  return _conf.configMode == 1;
+Mode operator|(Mode lhs, Mode rhs) {
+    return static_cast<Mode>(static_cast<int>(lhs) | static_cast<int>(rhs));
+};
+
+bool convertToJson(const Mode& src, JsonVariant dst) {
+  return dst.set((int)src);
+};
+
+void convertFromJson(JsonVariantConst src, Mode& dst) {
+  int t = src.as<const int>();
+  dst = (Mode)t;
+};
+
+Mode Config::getMode() {
+  return _conf.mode;
 }
 
-void Config::setConfigMode(bool configMode) {
-  _conf.configMode = configMode ? 1 : 0;
+void Config::setMode(Mode mode) {
+  _conf.mode = mode;
 }
 
 long Config::getSleepDurationUs() {
@@ -116,7 +129,7 @@ void Config::setCoeffs(const float c2, const float c1, const float c0) {
 }
 
 void Config::print() {
-  Serial.println("configMode: " + String(_conf.configMode));
+  Serial.println("mode: " + String((int)_conf.mode));
   Serial.println("sleepDurationUs: " + String(_conf.sleepDurationUs));
   Serial.println("ssid: " + String(_conf.ssid));
   Serial.println("pass: " + String(_conf.pass));
@@ -144,7 +157,7 @@ void Config::load() {
   if (error)
     Serial.println(F("Failed to read file, using default configuration"));
 
-  _conf.configMode = doc["configMode"] | 0;
+  _conf.mode = (Mode)doc["mode"] | Mode::Config;
   _conf.sleepDurationUs = doc["sleepDurationUs"] | DEFAULT_SLEEP_US;
   strlcpy(_conf.ssid,
           doc["ssid"] | "",
@@ -187,7 +200,7 @@ void Config::save() {
   StaticJsonDocument<384> doc;
 
   // Set the values in the document
-  doc["configMode"] = _conf.configMode;
+  doc["mode"] = (int)_conf.mode;
   doc["sleepDurationUs"] = _conf.sleepDurationUs;
   doc["ssid"] = _conf.ssid;
   doc["pass"] = _conf.pass;
