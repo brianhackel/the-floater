@@ -128,6 +128,27 @@ void Config::setCoeffs(const float c2, const float c1, const float c0) {
   _conf.coefficients[2] = c0;
 }
 
+bool Config::getGoogleSheetsDetails(String *deploymentId, String *spreadsheetId, String *sheetName) {
+  if(_conf.googleSheetsDeploymentId[0] == 0) {
+    *deploymentId = "";
+    *spreadsheetId = "";
+    *sheetName = "";
+    return false;
+  } else {
+    *deploymentId = _conf.googleSheetsDeploymentId;
+    *spreadsheetId = _conf.googleSheetsSpreadsheetId;
+    *sheetName = _conf.googleSheetsSheetName;
+    return true;
+  }
+}
+
+void Config::setGoogleSheetsDetails(const String& deploymentId, const String& spreadsheetId, const String& sheetName) {
+  snprintf(_conf.googleSheetsDeploymentId, LOG_KEY_STR_LEN, deploymentId.c_str());
+  snprintf(_conf.googleSheetsSpreadsheetId, LOG_KEY_STR_LEN, spreadsheetId.c_str());
+  snprintf(_conf.googleSheetsSheetName, LOG_KEY_STR_LEN, sheetName.c_str());
+}
+
+
 void Config::print() {
   Serial.println("mode: " + String((int)_conf.mode));
   Serial.println("sleepDurationUs: " + String(_conf.sleepDurationUs));
