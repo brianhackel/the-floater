@@ -34,6 +34,11 @@ p {
   width: 100%;
 }
 
+.loggingForm {
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
 .topnav { 
   overflow: hidden; 
   background-color: #0A1128;

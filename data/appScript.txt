@@ -1,0 +1,26 @@
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var spreadsheetId = data.spreadsheetId;
+  var sheetName = data.sheetName;
+  var sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(sheetName);
+  var date = new Date();
+  var unixDate = date.getTime();
+
+  var values = [unixDate, , data.temp, data.tilt, , data.battery];
+
+  var last = getLastDataRow(sheet) + 1;
+  // Append your data to the last row.
+  sheet.getRange(last, 1, 1, values.length).setValues([values]);
+
+  return ContentService.createTextOutput("Row appended successfully");
+}
+
+function getLastDataRow(sheet) {
+  var lastRow = sheet.getLastRow();
+  var range = sheet.getRange("A" + lastRow);
+  if (range.getValue() !== "") {
+    return lastRow;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.UP).getLastRow();
+  }              
+}

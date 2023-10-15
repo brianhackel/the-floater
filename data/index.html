@@ -36,17 +36,21 @@
             <option value="" disabled selected>Choose One</option>
             <option value="ifttt">IFTTT</option>
             <option value="brewersFriend">Brewers Friend</option>
+            <option value="googleSheets">Google Sheets</option>
           </select><br>
           <div id="loggingInfo">
             <div class='loggingForm' id="logging-ifttt">
               <label for="iftttKey">Webhooks Key:</label>
-              <input type="password" id="iftttKey" name="iftttKey"><br>
+              <input type="password" id="iftttKey" name="iftttKey">
+                <a href="https://help.ifttt.com/hc/en-us/articles/115010230347-Webhooks-service-FAQ" target="_blank"><i class="far fa-question-circle fa-lg"></i></a><br>
               <label for="iftttEvent">Event Name:</label>
-              <input type="text" id="iftttEvent" name="iftttEvent"><br>
+              <input type="text" id="iftttEvent" name="iftttEvent">
+                <a href="https://ifttt.com/maker_webhooks/triggers/event" target="_blank"><i class="far fa-question-circle fa-lg"></i></a>
             </div>
             <div class='loggingForm' id="logging-brewersFriend">
               <label for="brewersFriendKey">API Key:</label>
-              <input type="password" id="brewersFriendKey" name="brewersFriendKey"><br>
+              <input type="password" id="brewersFriendKey" name="brewersFriendKey">
+                <a href="https://docs.brewersfriend.com/api/" target="_blank"><i class="far fa-question-circle fa-lg"></i></a><br>
               <div class="card-title">Polynomial Coefficients for tilt to gravity fit</div>
               <div class="inputTable">
                 <input class="inputTableCell no-spinner" type="number" id="bfSquaredCoeff" name="bfSquaredCoeff">
@@ -54,7 +58,21 @@
                 <input class="inputTableCell no-spinner" type="number" id="bfFirstDegreeCoeff" name="bfFirstDegreeCoeff">
                 <label>x + </label>
                 <input class="inputTableCell no-spinner" type="number" id="bfZeroDegreeCoeff" name="bfZeroDegreeCoeff">
+                  <a href="https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md" target="_blank"><i class="far fa-question-circle fa-lg"></i></a>
               </div>
+            </div>
+            <div class='loggingForm' id="logging-googleSheets">
+              <label>Please note that in order to use Google Sheets directly, you will need to set up a
+                <a href="https://www.google.com/script/start/" target="_blank">Google Apps Script</a> 'web app'
+                to receive the requests and process the log. <a href="appScript.txt" target="_blank">Here</a> is an example.</label><br>
+              <label for="sheetsDeploymentId">Deployment ID:</label>
+              <input type="text" id="sheetsDeploymentId" name="sheetsDeploymentId">
+                <a href="https://developers.google.com/apps-script/concepts/deployments#find-deployment" target="_blank"><i class="far fa-question-circle fa-lg"></i></a><br>
+              <label for="sheetsSheetId">Spreadsheet ID:</label>
+              <input type="text" id="sheetsSheetId" name="sheetsSheetId">
+                <a href="https://developers.google.com/sheets/api/guides/concepts" target="_blank"><i class="far fa-question-circle fa-lg"></i></a><br>
+              <label for="sheetsSheetName">Sheet Name:</label>
+              <input type="text" id="sheetsSheetName" name="sheetsSheetName" placeholder="Spreadsheet logging 'tab' name">
             </div>
           </div>
           <div id="errorMessage"></div>

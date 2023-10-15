@@ -317,6 +317,10 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#logging-brewersFriend').show();
         $('#logging-brewersFriend *').attr('disabled', false);
         break;
+      case "googleSheets":
+        $('#logging-googleSheets').show();
+        $('#logging-googleSheets *').attr('disabled', false);
+        break;
       default:
         console.log("oops, bad value");
     }
