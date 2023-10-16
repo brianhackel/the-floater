@@ -128,6 +128,27 @@ void Config::setCoeffs(const float c2, const float c1, const float c0) {
   _conf.coefficients[2] = c0;
 }
 
+bool Config::getGoogleSheetsDetails(String *deploymentId, String *spreadsheetId, String *sheetName) {
+  if(_conf.googleSheetsDeploymentId[0] == 0) {
+    *deploymentId = "";
+    *spreadsheetId = "";
+    *sheetName = "";
+    return false;
+  } else {
+    *deploymentId = _conf.googleSheetsDeploymentId;
+    *spreadsheetId = _conf.googleSheetsSpreadsheetId;
+    *sheetName = _conf.googleSheetsSheetName;
+    return true;
+  }
+}
+
+void Config::setGoogleSheetsDetails(const String& deploymentId, const String& spreadsheetId, const String& sheetName) {
+  snprintf(_conf.googleSheetsDeploymentId, LOG_KEY_STR_LEN, deploymentId.c_str());
+  snprintf(_conf.googleSheetsSpreadsheetId, LOG_KEY_STR_LEN, spreadsheetId.c_str());
+  snprintf(_conf.googleSheetsSheetName, LOG_KEY_STR_LEN, sheetName.c_str());
+}
+
+
 void Config::print() {
   Serial.println("mode: " + String((int)_conf.mode));
   Serial.println("sleepDurationUs: " + String(_conf.sleepDurationUs));
@@ -142,6 +163,9 @@ void Config::print() {
   Serial.println("coefficients: " + String(_conf.coefficients[0], 12) + "x^2 + "
                                   + String(_conf.coefficients[1], 12) + "x + "
                                   + String(_conf.coefficients[2], 12));
+  Serial.println("googleSheetsDeploymentId: " + String(_conf.googleSheetsDeploymentId));
+  Serial.println("googleSheetsSpreadsheetId: " + String(_conf.googleSheetsSpreadsheetId));
+  Serial.println("googleSheetsSheetName: " + String(_conf.googleSheetsSheetName));
 }
 
 void Config::load() {
@@ -150,7 +174,7 @@ void Config::load() {
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
   // Use arduinojson.org/v6/assistant to compute the capacity.
-  StaticJsonDocument<384> doc;
+  StaticJsonDocument<768> doc;
 
   // Deserialize the JSON document
   DeserializationError error = deserializeJson(doc, file);
@@ -180,6 +204,15 @@ void Config::load() {
   for (int i = 0; i < N_COEFFICIENTS; i++) {
     _conf.coefficients[i] = doc["coefficients"][i] | 0.0;
   }
+  strlcpy(_conf.googleSheetsDeploymentId,
+          doc["googleSheetsDeploymentId"] | "",
+          sizeof(_conf.googleSheetsDeploymentId));
+  strlcpy(_conf.googleSheetsSpreadsheetId,
+          doc["googleSheetsSpreadsheetId"] | "",
+          sizeof(_conf.googleSheetsSpreadsheetId));
+  strlcpy(_conf.googleSheetsSheetName,
+          doc["googleSheetsSheetName"] | "",
+          sizeof(_conf.googleSheetsSheetName));
 
   // Close the file (Curiously, File's destructor doesn't close the file)
   file.close();
@@ -197,7 +230,7 @@ void Config::save() {
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
   // Use arduinojson.org/assistant to compute the capacity.
-  StaticJsonDocument<384> doc;
+  StaticJsonDocument<768> doc;
 
   // Set the values in the document
   doc["mode"] = (int)_conf.mode;
@@ -213,6 +246,10 @@ void Config::save() {
   for (int i = 0; i < N_COEFFICIENTS; i++) {
     doc["coefficients"][i] = _conf.coefficients[i];
   }
+  doc["googleSheetsDeploymentId"] = _conf.googleSheetsDeploymentId;
+  doc["googleSheetsSpreadsheetId"] = _conf.googleSheetsSpreadsheetId;
+  doc["googleSheetsSheetName"] = _conf.googleSheetsSheetName;
+
 
   // Serialize JSON to file
   if (serializeJson(doc, file) == 0) {

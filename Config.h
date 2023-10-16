@@ -10,7 +10,7 @@
 #define LOG_KEY_STR_LEN 128
 #define N_COEFFICIENTS 3 // squared, first-degree, constant
 
-enum class LogType {None, IFTTT, BrewersFriend};
+enum class LogType {None, IFTTT, BrewersFriend, GoogleSheets};
 enum class Mode {Config, Operate, Standby};
 
 class Config {
@@ -27,6 +27,9 @@ class Config {
       char iftttEventName[LOG_KEY_STR_LEN];
       char brewersFriendKey[LOG_KEY_STR_LEN];
       float coefficients[N_COEFFICIENTS]; // 0-->squared, 1-->first-degree, 2-->constant
+      char googleSheetsDeploymentId[LOG_KEY_STR_LEN];
+      char googleSheetsSpreadsheetId[LOG_KEY_STR_LEN];
+      char googleSheetsSheetName[LOG_KEY_STR_LEN];
     };
 
     Conf _conf;
@@ -55,5 +58,7 @@ class Config {
     void clearLoggingConfigs() { setLogType(LogType::None); };
     void getCoeffs(float *c2, float *c1, float *c0);
     void setCoeffs(const float c2, const float c1, const float c0);
+    bool getGoogleSheetsDetails(String *deploymentId, String *spreadsheetId, String *sheetName);
+    void setGoogleSheetsDetails(const String& deploymentId, const String& spreadsheetId, const String& sheetName);
 };
 #endif

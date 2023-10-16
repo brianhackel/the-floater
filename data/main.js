@@ -300,6 +300,13 @@ document.addEventListener('DOMContentLoaded', function () {
           $("#bfFirstDegreeCoeff").val(data["bfFirstDegreeCoeff"].toFixed(6));
         if (data.hasOwnProperty("bfZeroDegreeCoeff"))
           $("#bfZeroDegreeCoeff").val(data["bfZeroDegreeCoeff"].toFixed(6));
+
+        if (data.hasOwnProperty("sheetsDeploymentId"))
+          $("#sheetsDeploymentId").val(data["sheetsDeploymentId"]);
+        if (data.hasOwnProperty("sheetsSheetId"))
+          $("#sheetsSheetId").val(data["sheetsSheetId"]);
+        if (data.hasOwnProperty("sheetsSheetName"))
+          $("#sheetsSheetName").val(data["sheetsSheetName"]);
       }
     });
   });
@@ -316,6 +323,10 @@ document.addEventListener('DOMContentLoaded', function () {
       case "brewersFriend":
         $('#logging-brewersFriend').show();
         $('#logging-brewersFriend *').attr('disabled', false);
+        break;
+      case "googleSheets":
+        $('#logging-googleSheets').show();
+        $('#logging-googleSheets *').attr('disabled', false);
         break;
       default:
         console.log("oops, bad value");

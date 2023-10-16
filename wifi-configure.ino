@@ -43,7 +43,7 @@ String processor( const String& var ){
 void setupStateServer() {
   String json = "{";
   json += "\"time\": " + String(configuration.getSleepDurationUs() / 60000000ul);
-  String key, event;
+  String key, event, sheetId, sheetName;
   if (configuration.getIftttDetails(&key, &event)) {
     json += ", \"type\": \"ifttt\"";
     json += ", \"iftttKey\": \"" + key + "\"";
@@ -56,6 +56,11 @@ void setupStateServer() {
     json += ", \"bfSquaredCoeff\": " + String(c2,12);
     json += ", \"bfFirstDegreeCoeff\": " + String(c1,12);
     json += ", \"bfZeroDegreeCoeff\": " + String(c0,12);
+  } else if(configuration.getGoogleSheetsDetails(&key, &sheetId, &sheetName)) {
+    json += ", \"type\": \"googleSheets\"";
+    json += ", \"sheetsDeploymentId\": \"" + key + "\"";
+    json += ", \"sheetsSheetId\": \"" + sheetId + "\"";
+    json += ", \"sheetsSheetName\": \"" + sheetName + "\"";
   }
   json += "}";
   const String logging_json = json;
@@ -124,7 +129,13 @@ void setupStateServer() {
         if (request->hasParam("bfZeroDegreeCoeff", true, false))
           c0 = request->getParam("bfZeroDegreeCoeff", true, false)->value().toFloat();
         configuration.setCoeffs(c2, c1, c0);
+      } else if (type.equalsIgnoreCase("googleSheets")) {
+        configuration.setLogType(LogType::GoogleSheets);
+        configuration.setGoogleSheetsDetails(request->getParam("sheetsDeploymentId", true, false)->value().c_str(),
+                                             request->getParam("sheetsSheetId", true, false)->value().c_str(),
+                                             request->getParam("sheetsSheetName", true, false)->value().c_str());
       }
+
     }
     configuration.setMode(Mode::Operate);
     request->send(200, "text/plain", "Done. The-Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
