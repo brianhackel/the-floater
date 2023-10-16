@@ -1,7 +1,9 @@
+#include "WiFiClientSecureBearSSL.h"
 #include "Poster.h"
 
 bool Poster::postOneUpdate(float angle, float temperature, long batteryPercentage) {
-  WiFiClient client;
+  WiFiClientSecure client;
+  client.setInsecure();
   HTTPClient http;
   http.begin(client, _url);
   
@@ -14,7 +16,9 @@ bool Poster::postOneUpdate(float angle, float temperature, long batteryPercentag
   // Send HTTP POST request
   Serial.println("posting to " + _name + ": " + jsonString);
   int httpResponseCode = http.POST(jsonString);
+  Serial.println(httpResponseCode);
+  Serial.println(http.errorToString(httpResponseCode));
   http.end();
-  return httpResponseCode == 200;
+  return httpResponseCode == 200 || httpResponseCode == 302;
 }
 

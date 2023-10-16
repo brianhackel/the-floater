@@ -1,7 +1,7 @@
 #include "IFTTT.h"
 
 const String IFTTT::NAME = "IFTTT";
-const String IFTTT::BASE_URL = "http://maker.ifttt.com/trigger/";
+const String IFTTT::BASE_URL = "https://maker.ifttt.com/trigger/";
 
 IFTTT::IFTTT(const String& key, const String& eventName) : Poster(BASE_URL + eventName + "/json/with/key/" + key, NAME) {};
 

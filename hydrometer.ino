@@ -11,6 +11,7 @@
 #include "Battery.h"
 #include "BrewersFriend.h"
 #include "IFTTT.h"
+#include "GoogleSheets.h"
 #include "Config.h"
 
 #define VERSION "1.0.0"
@@ -157,8 +158,7 @@ void setup() {
       configStartMs = millis();
     } else {
       // do the stuff we need to do to log once
-      String key;
-      String event;
+      String key, event, spreadsheet, sheet;
       Poster *poster = NULL;
       switch (configuration.getLogType()) {
         case LogType::IFTTT:
@@ -170,6 +170,11 @@ void setup() {
             float c2, c1, c0;
             configuration.getCoeffs(&c2, &c1, &c0);
             poster = new BrewersFriend(key, c2, c1, c0);
+          }
+          break;
+        case LogType::GoogleSheets:
+          if (configuration.getGoogleSheetsDetails(&key, &spreadsheet, &sheet)) {
+            poster = new GoogleSheets(key, spreadsheet, sheet);
           }
           break;
         default:
