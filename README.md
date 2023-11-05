@@ -32,3 +32,11 @@ The Floater has a few differnt modes indicated by the lights.
     3. AS SOON AS you see the Blue light blinking after pressing the RESET button, PRESS IT AGAIN
     4. WAIT. You should now notice that the device goes from Boot to Configuration mode (Blue Light blinking slowly at once a second)
     5. From here, you should be able to access the Configuration page via `the-floater.local`.
+
+# Calibration
+
+## Tare
+When you first start Calibration mode, you will want to check that The Floater is properly reading zero degrees when standing on its head (vertically with the cap on a flat surface. If it is not, you can use the Tare Tilt button on the Calibration controls page described in (2) above and it will reset The Floater's accellerometer so that the vertical position reads as the zero point.
+
+## Gravity Calibration
+In order to use The Floater to measure wort gravity, you will need to associate the relative tilt of The Floater in the wort to a gravity reading. There are two ways to accomplish this, and they are best outlined [here](https://github.com/universam1/iSpindel/blob/master/docs/Calibration_en.md). The basic idea is that you will plot tilt vs measured gravity either for a known sugar content or while a "calibration beer" is fermenting. Then, you will generate a line of best fit for this curve in order to later extrapolate the raw tilt values into gravity. If you choose logging to Brewers Friend, you will provide the quadratic coefficients (the numbers that define the extrapolation) as part of the logging configuration. Otherwise, with IFTTT or Google Sheets, it will log the raw tilt and you can provide the calculation to turn tilt into gravity at those endpoints - like using the example sheet [here](https://docs.google.com/spreadsheets/d/107TZXtcOXvufwRQD0lQkzRgjmtRLabq-Asz4AIUTeuQ/edit?usp=sharing) (feel free to copy the template to your own Google Sheets account and go from there - but note that you will need to use the calibration sheet to calibrate your particular Floater).
