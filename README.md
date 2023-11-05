@@ -3,7 +3,7 @@ A tilt floating hydrometer built on Adafruit Feather Huzzah ESP8266 and MPU-6050
 
 # Operation
 <p align="center">
-<img src="https://github.com/brianhackel/the-floater/assets/38873726/0c82304c-94e9-4ad5-9e92-2c0f6f601775" height="500" />
+<img src="https://github.com/brianhackel/the-floater/blob/main/docs/diagram.jpg" height="500" />
 </p>
 
 ## Modes
