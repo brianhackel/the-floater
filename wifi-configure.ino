@@ -86,11 +86,11 @@ void setupStateServer() {
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     LittleFS.remove(Config::filename);
     restart = true;
-    request->send(200, "text/plain", "Done. The-Floater will restart. You will need to connect to The-Floater's WiFi network to reconfigure.");
+    request->send(200, "text/plain", "Done. The Floater will restart. You will need to connect to The Floater's WiFi network to reconfigure.");
   });
 
   server.on("/standby", HTTP_POST, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Done. The-Floater is going to standby mode. To wake: connect to power and press RESET button.");
+    request->send(200, "text/plain", "Done. The Floater is going to standby mode. To wake: connect to power and press RESET button.");
     standby = true;
   });
 
@@ -138,7 +138,7 @@ void setupStateServer() {
 
     }
     configuration.setMode(Mode::Operate);
-    request->send(200, "text/plain", "Done. The-Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
+    request->send(200, "text/plain", "Done. The Floater will restart and begin logging at " + String(timeMins) + " minute intervals.");
     restart = true;
   });
   
@@ -147,7 +147,7 @@ void setupStateServer() {
 
 void setupAccessPoint() {
   Serial.println("Setting AP (Access Point)");
-  WiFi.softAP("The-Floater");
+  WiFi.softAP("The Floater");
 
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(53, "*", WiFi.softAPIP());
@@ -197,7 +197,7 @@ void setupAccessPoint() {
     configuration.setMode(Mode::Config);
     restart = true;
     String linkStr = "http://" + hostname + ".local";
-    request->send(200, "text/html", "Done. The-Floater will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
+    request->send(200, "text/html", "Done. The Floater will restart. Please connect to the \"" + ssid + "\" network and go to <a href='" + linkStr + "'>" + linkStr + "</a> for configuration");
   }).setFilter(ON_AP_FILTER);
 
   server.begin();

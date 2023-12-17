@@ -4,7 +4,7 @@ const String BrewersFriend::BASE_URL = "https://log.brewersfriend.com/stream/";
 const String BrewersFriend::NAME = "BrewersFriend";
 
 String BrewersFriend::getJson(float angle, float temperature, long battery) const {
-  String jsonString = "{\"name\":\"The-Floater\",";
+  String jsonString = "{\"name\":\"The Floater\",";
   jsonString += "\"temp\":\"";
   jsonString += temperature;
   jsonString += "\",";

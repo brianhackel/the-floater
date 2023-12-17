@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     $("#btnTare").click(function(){
-      if (confirm('Please hold The-Floater perfectly upright (as best you can) WITH ITS CAP FACING UP.')) {
+      if (confirm('Please hold The Floater perfectly upright (as best you can) WITH ITS CAP FACING UP.')) {
         $.post( "/tare", function(data) {
           pause = true;
           $('#loading').show();
