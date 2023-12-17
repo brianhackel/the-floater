@@ -44,6 +44,10 @@ p {
   background-color: #0A1128;
 }
 
+.topnav img {
+  padding: 8px;
+}
+
 .footer {
   padding: 20px;
 }
