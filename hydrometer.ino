@@ -27,6 +27,7 @@ DNSServer dnsServer;
 boolean restart = false;
 boolean standby = false;
 boolean error = false;
+boolean reset = false;
 Temperature t;
 Lights lights(BLUE_LED, RED_LED);
 TickTwo redBlinker([](){lights.toggleRed();}, 250, 0, MILLIS);
@@ -82,7 +83,9 @@ void incrementConsecutiveFailures() {
 void doRestart() {
   server.end();
   delay(1000);
-  configuration.save();
+  if (!reset) {
+    configuration.save();
+  }
   ESP.restart();
 }
 
@@ -99,7 +102,7 @@ void setup() {
   if (rinfo->reason == REASON_EXT_SYS_RST) {
     if (configuration.getMode() == Mode::Config) {
       LittleFS.remove(Config::filename);
-      configuration.clearWifiCredentials();
+      reset = true;
     } else {
       configuration.setMode(Mode::Config);
     }

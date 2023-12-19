@@ -86,6 +86,7 @@ void setupStateServer() {
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     LittleFS.remove(Config::filename);
     restart = true;
+    reset = true;
     request->send(200, "text/plain", "Done. The Floater will restart. You will need to connect to The Floater's WiFi network to reconfigure.");
   });
 
