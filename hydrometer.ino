@@ -14,7 +14,7 @@
 #include "GoogleSheets.h"
 #include "Config.h"
 
-#define VERSION "1.0.1"
+#define VERSION "1.0.3"
 
 #define RED_LED 0
 #define BLUE_LED 2
